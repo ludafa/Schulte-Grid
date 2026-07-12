@@ -185,12 +185,10 @@ export function SchulteGrid() {
       <div className="max-w-2xl mx-auto">
         {/* 标题 */}
         <div className="text-center mb-6 sm:mb-8">
-          <div className="inline-flex items-center gap-2 mb-2 flex-wrap justify-center">
-            <Sparkles className="w-6 sm:w-8 h-6 sm:h-8 text-primary animate-pulse" />
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">舒尔特方格</h1>
-            <Sparkles className="w-6 sm:w-8 h-6 sm:h-8 text-primary animate-pulse" />
-          </div>
-          <p className="text-xs sm:text-base text-muted-foreground">按顺序点击数字 1 到 {totalCells}，训练你的注意力!</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-2">舒尔特方格</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
+            按顺序点击数字 <span className="font-semibold text-foreground">1</span> 到 <span className="font-semibold text-foreground">{totalCells}</span>，训练你的注意力
+          </p>
         </div>
 
         {/* 游戏状态栏 - 游戏进行中隐藏 */}
@@ -317,21 +315,23 @@ export function SchulteGrid() {
                       onClick={() => handleCellClick(index)}
                       disabled={cell.clicked}
                       className={cn(
-                        "aspect-square rounded-xl font-bold transition-all duration-200 transform",
-                        "flex items-center justify-center",
-                        "shadow-md hover:shadow-lg active:scale-95",
-                        "border-2",
+                        "aspect-square rounded-2xl font-bold transition-all duration-150 transform",
+                        "flex items-center justify-center select-none",
+                        /* 3D raised tile — hard bottom shadow creates physical depth */
+                        "shadow-[0_4px_0_0_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.04)]",
+                        "hover:shadow-[0_6px_0_0_rgba(0,0,0,0.08),0_3px_8px_rgba(0,0,0,0.06)]",
+                        "active:shadow-[0_1px_0_0_rgba(0,0,0,0.06)] active:scale-[0.97]",
                         gridSize <= 5 ? "text-lg sm:text-2xl" : gridSize <= 7 ? "text-base sm:text-xl" : "text-sm sm:text-lg",
                         isHidden && "opacity-0 pointer-events-none",
-                        isHighlighted && "bg-green-100 border-green-400 text-green-600",
-                        isWrong && "animate-shake bg-red-100 border-red-400",
-                        !cell.clicked && !isWrong && "bg-card border-primary/30 text-foreground hover:border-primary hover:bg-primary/5",
+                        /* Clicked with highlight: pressed-into-place, soft green */
+                        isHighlighted && "bg-emerald-100 text-emerald-700 shadow-[0_1px_0_0_rgba(0,0,0,0.04)] scale-[0.97]",
+                        /* Wrong click: red flash + shake */
+                        isWrong && "animate-shake bg-red-100 text-red-600 shadow-[0_1px_0_0_rgba(0,0,0,0.04)]",
+                        /* Unclicked default: white tile, indigo-tinged border */
+                        !cell.clicked && !isWrong && "bg-card text-foreground border border-slate-200/80",
                       )}
                     >
                       {!isHidden && cell.value}
-                      {isHighlighted && (
-                        <Star className="absolute w-3 h-3 text-green-500 -top-1 -right-1" />
-                      )}
                     </button>
                   )
                 })}
@@ -346,8 +346,8 @@ export function SchulteGrid() {
             <CardContent className="pt-4 sm:pt-6 text-center">
               <div className="flex justify-center mb-3 sm:mb-4">
                 <div className="relative">
-                  <Trophy className="w-12 sm:w-16 h-12 sm:h-16 text-yellow-500" />
-                  <Sparkles className="w-5 sm:w-6 h-5 sm:h-6 text-yellow-400 absolute -top-1 -right-1 animate-ping" />
+                  <Trophy className="w-12 sm:w-16 h-12 sm:h-16 text-amber-500" />
+                  <Sparkles className="w-5 sm:w-6 h-5 sm:h-6 text-amber-400 absolute -top-1 -right-1 animate-pulse" />
                 </div>
               </div>
               <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-1 sm:mb-2">太棒了!</h2>
@@ -358,8 +358,8 @@ export function SchulteGrid() {
                 {formatTime(elapsedTime)}
               </div>
               {bestRecord && elapsedTime === bestRecord.time && (
-                <div className="inline-flex items-center gap-2 bg-yellow-100 text-yellow-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-3 sm:mb-4">
-                  <Star className="w-4 sm:w-5 h-4 sm:h-5 fill-yellow-500" />
+                <div className="inline-flex items-center gap-2 bg-accent/20 text-accent-foreground px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-3 sm:mb-4">
+                  <Star className="w-4 sm:w-5 h-4 sm:h-5 fill-amber-500 text-amber-500" />
                   <span className="text-sm sm:text-base font-bold">新纪录!</span>
                 </div>
               )}
