@@ -50,6 +50,12 @@ const CELL_COLORS = [
   "bg-[#EDE7F6] border-[#D1C4E9] text-[#7B6BA6]",
 ]
 
+const SINGLE_CELL_COLOR = "bg-[#FFF8E1] border-[#FFE082] text-[#BF8C30]"
+
+const DIFFICULTY_EMOJI: Record<number, string> = {
+  3: "🐣", 4: "🐥", 5: "🐔", 6: "🦊", 7: "🦁",
+}
+
 const MASGOT_EMOJIS = ["🧸", "🐻", "🐰", "🐱", "🐶"]
 const MASGOT_QUOTES = [
   "找到数字 {n} ！",
@@ -143,6 +149,8 @@ export function SchulteGrid() {
   const [elapsedTime, setElapsedTime] = useState(0)
   const [records, setRecords] = useState<GameRecord[]>([])
   const [showHistory, setShowHistory] = useState(false)
+  const [colorMode, setColorMode] = useState<"rainbow" | "single">("rainbow")
+  const [autoHide, setAutoHide] = useState(false)
   const [wrongClick, setWrongClick] = useState<number | null>(null)
   const [sparkleCell, setSparkleCell] = useState<number | null>(null)
   const [showConfetti, setShowConfetti] = useState(false)
@@ -259,8 +267,8 @@ export function SchulteGrid() {
 
   const totalCells = gridSize * gridSize
   const currentQuote = MASGOT_QUOTES[quoteIndex].replace("{n}", String(nextNumber))
-  const cellTextSize = gridSize <= 3 ? "text-3xl sm:text-4xl" : gridSize <= 4 ? "text-2xl sm:text-3xl" : "text-xl sm:text-2xl"
-  const gridGap = gridSize <= 3 ? "gap-3" : gridSize <= 4 ? "gap-2.5" : "gap-2"
+  const cellTextSize = gridSize <= 3 ? "text-3xl sm:text-4xl" : gridSize <= 4 ? "text-2xl sm:text-3xl" : gridSize <= 5 ? "text-xl sm:text-2xl" : gridSize <= 6 ? "text-lg sm:text-xl" : "text-base sm:text-lg"
+  const gridGap = gridSize <= 3 ? "gap-3" : gridSize <= 4 ? "gap-2.5" : gridSize <= 5 ? "gap-2" : gridSize <= 6 ? "gap-1.5" : "gap-1"
 
   return (
     <>
@@ -294,20 +302,80 @@ export function SchulteGrid() {
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-muted-foreground">难度</span>
                   <span className="text-xl font-extrabold text-[#FF8C42]">
-                    {gridSize}×{gridSize}
-                    {gridSize === 3 ? " 🐣" : gridSize === 4 ? " 🐥" : " 🐔"}
+                    {gridSize}×{gridSize} {DIFFICULTY_EMOJI[gridSize] ?? ""}
                   </span>
                 </div>
                 <Slider
                   value={[gridSize]}
                   onValueChange={([v]) => setGridSize(v)}
                   min={3}
-                  max={5}
+                  max={7}
                   step={1}
                 />
                 <div className="flex justify-between text-xs text-muted-foreground/60 mt-1.5">
-                  <span>简单</span>
-                  <span>挑战</span>
+                  <span>🐣 简单</span>
+                  <span>🦁 挑战</span>
+                </div>
+              </div>
+
+              {/* 方块颜色 + 点击效果 */}
+              <div className="bg-white/70 rounded-2xl px-5 py-3 border border-border shadow-sm max-w-sm mx-auto space-y-3">
+                {/* 颜色模式 */}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">方块颜色</span>
+                  <div className="inline-flex rounded-lg border border-border overflow-hidden">
+                    <button
+                      onClick={() => setColorMode("rainbow")}
+                      className={cn(
+                        "px-3 py-1.5 text-xs font-bold transition-colors",
+                        colorMode === "rainbow"
+                          ? "bg-[#FF8C42] text-white"
+                          : "bg-transparent text-muted-foreground hover:bg-muted/50",
+                      )}
+                    >
+                      🌈 多彩
+                    </button>
+                    <button
+                      onClick={() => setColorMode("single")}
+                      className={cn(
+                        "px-3 py-1.5 text-xs font-bold transition-colors",
+                        colorMode === "single"
+                          ? "bg-[#FF8C42] text-white"
+                          : "bg-transparent text-muted-foreground hover:bg-muted/50",
+                      )}
+                    >
+                      🎨 单色
+                    </button>
+                  </div>
+                </div>
+
+                {/* 点击后效果 */}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">点击后</span>
+                  <div className="inline-flex rounded-lg border border-border overflow-hidden">
+                    <button
+                      onClick={() => setAutoHide(false)}
+                      className={cn(
+                        "px-3 py-1.5 text-xs font-bold transition-colors",
+                        !autoHide
+                          ? "bg-[#FF6B9D] text-white"
+                          : "bg-transparent text-muted-foreground hover:bg-muted/50",
+                      )}
+                    >
+                      ✨ 高亮
+                    </button>
+                    <button
+                      onClick={() => setAutoHide(true)}
+                      className={cn(
+                        "px-3 py-1.5 text-xs font-bold transition-colors",
+                        autoHide
+                          ? "bg-[#FF6B9D] text-white"
+                          : "bg-transparent text-muted-foreground hover:bg-muted/50",
+                      )}
+                    >
+                      👻 消失
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -406,9 +474,10 @@ export function SchulteGrid() {
                 style={{ gridTemplateColumns: `repeat(${gridSize}, 1fr)` }}
               >
                 {cells.map((cell, index) => {
-                  const colorClass = CELL_COLORS[index % CELL_COLORS.length]
+                  const colorClass = colorMode === "single" ? SINGLE_CELL_COLOR : CELL_COLORS[index % CELL_COLORS.length]
                   const isWrong = wrongClick === index
                   const isSparking = sparkleCell === index
+                  const isHidden = autoHide && cell.clicked
 
                   return (
                     <button
@@ -422,20 +491,22 @@ export function SchulteGrid() {
                         "transition-all duration-150",
                         "active:scale-90",
                         cellTextSize,
-                        // 未点击：彩色背景
-                        !cell.clicked && !isWrong && cn(
+                        // 消失模式
+                        isHidden && "opacity-0 pointer-events-none scale-50",
+                        // 未点击：彩色 / 单色背景
+                        !cell.clicked && !isWrong && !isHidden && cn(
                           colorClass,
                           "shadow-sm hover:shadow-md hover:scale-[1.04] cursor-pointer",
                         ),
-                        // 已点击：粉色 + 弹跳
-                        cell.clicked && "bg-[#FF6B9D] border-[#FF4D88] text-white shadow-md",
-                        cell.clicked && "animate-[pop-bounce_0.35s_ease-out]",
+                        // 已点击（高亮模式）：粉色 + 弹跳
+                        cell.clicked && !autoHide && "bg-[#FF6B9D] border-[#FF4D88] text-white shadow-md",
+                        cell.clicked && !autoHide && "animate-[pop-bounce_0.35s_ease-out]",
                         // 点错：摇头
                         isWrong && "animate-[head-shake_0.4s_ease-out] bg-[#FFE0E0] border-[#FF9999] text-[#CC5555]",
                       )}
                     >
-                      {cell.value}
-                      {isSparking && <Sparkles index={index} />}
+                      {!isHidden && cell.value}
+                      {isSparking && !autoHide && <Sparkles index={index} />}
                     </button>
                   )
                 })}
