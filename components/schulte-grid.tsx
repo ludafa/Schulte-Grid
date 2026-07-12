@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
 import { cn } from "@/lib/utils"
-import { RotateCcw, Settings2, Trash2 } from "lucide-react"
+import { RotateCcw, Trash2 } from "lucide-react"
 
 type HighlightMode = "none" | "highlight" | "hide"
 
@@ -49,6 +49,12 @@ const CELL_COLORS = [
   "bg-[#FCE4EC] border-[#F8BBD0] text-[#C2728A]",
   "bg-[#EDE7F6] border-[#D1C4E9] text-[#7B6BA6]",
 ]
+
+const SINGLE_CELL_COLOR = "bg-[#FFF8E1] border-[#FFE082] text-[#BF8C30]"
+
+const DIFFICULTY_EMOJI: Record<number, string> = {
+  3: "🐣", 4: "🐥", 5: "🐔", 6: "🦊", 7: "🦁",
+}
 
 const MASGOT_EMOJIS = ["🧸", "🐻", "🐰", "🐱", "🐶"]
 const MASGOT_QUOTES = [
@@ -142,7 +148,10 @@ export function SchulteGrid() {
   const [startTime, setStartTime] = useState<number | null>(null)
   const [elapsedTime, setElapsedTime] = useState(0)
   const [records, setRecords] = useState<GameRecord[]>([])
-  const [showParentPanel, setShowParentPanel] = useState(false)
+  const [showHistory, setShowHistory] = useState(false)
+  const [colorMode, setColorMode] = useState<"rainbow" | "single">("rainbow")
+  const [autoHide, setAutoHide] = useState(false)
+  const [animationMode, setAnimationMode] = useState<"rich" | "simple">("simple")
   const [wrongClick, setWrongClick] = useState<number | null>(null)
   const [sparkleCell, setSparkleCell] = useState<number | null>(null)
   const [showConfetti, setShowConfetti] = useState(false)
@@ -196,7 +205,7 @@ export function SchulteGrid() {
     setWrongClick(null)
     setSparkleCell(null)
     setShowConfetti(false)
-    setShowParentPanel(false)
+    setShowHistory(false)
     setQuoteIndex(0)
   }, [gridSize])
 
@@ -259,8 +268,8 @@ export function SchulteGrid() {
 
   const totalCells = gridSize * gridSize
   const currentQuote = MASGOT_QUOTES[quoteIndex].replace("{n}", String(nextNumber))
-  const cellTextSize = gridSize <= 3 ? "text-3xl sm:text-4xl" : gridSize <= 4 ? "text-2xl sm:text-3xl" : "text-xl sm:text-2xl"
-  const gridGap = gridSize <= 3 ? "gap-3" : gridSize <= 4 ? "gap-2.5" : "gap-2"
+  const cellTextSize = gridSize <= 3 ? "text-3xl sm:text-4xl" : gridSize <= 4 ? "text-2xl sm:text-3xl" : gridSize <= 5 ? "text-xl sm:text-2xl" : gridSize <= 6 ? "text-lg sm:text-xl" : "text-base sm:text-lg"
+  const gridGap = gridSize <= 3 ? "gap-3" : gridSize <= 4 ? "gap-2.5" : gridSize <= 5 ? "gap-2" : gridSize <= 6 ? "gap-1.5" : "gap-1"
 
   return (
     <>
@@ -273,7 +282,7 @@ export function SchulteGrid() {
               IDLE — 开始画面
               ════════════════════════════════════ */}
           {gameState === "idle" && (
-            <div className="text-center space-y-8">
+            <div className="text-center space-y-6">
               {/* 吉祥物 */}
               <div className="text-7xl sm:text-8xl" style={{ animation: "mascot-bounce 1.5s ease-in-out infinite" }}>
                 {masgotEmoji}
@@ -289,12 +298,115 @@ export function SchulteGrid() {
                 </p>
               </div>
 
-              {/* 难度预览 */}
-              <div className="inline-flex items-center gap-2 bg-white/70 rounded-full px-5 py-2 border border-border shadow-sm">
-                <span className="text-sm text-muted-foreground">难度：</span>
-                {gridSize === 3 && <span className="text-lg">🐣 3×3</span>}
-                {gridSize === 4 && <span className="text-lg">🐥 4×4</span>}
-                {gridSize === 5 && <span className="text-lg">🐔 5×5</span>}
+              {/* 难度滑块 */}
+              <div className="bg-white/70 rounded-2xl px-5 py-4 border border-border shadow-sm max-w-sm mx-auto">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-muted-foreground">难度</span>
+                  <span className="text-xl font-extrabold text-[#FF8C42]">
+                    {gridSize}×{gridSize} {DIFFICULTY_EMOJI[gridSize] ?? ""}
+                  </span>
+                </div>
+                <Slider
+                  value={[gridSize]}
+                  onValueChange={([v]) => setGridSize(v)}
+                  min={3}
+                  max={7}
+                  step={1}
+                />
+                <div className="flex justify-between text-xs text-muted-foreground/60 mt-1.5">
+                  <span>🐣 简单</span>
+                  <span>🦁 挑战</span>
+                </div>
+              </div>
+
+              {/* 方块颜色 + 点击效果 */}
+              <div className="bg-white/70 rounded-2xl px-5 py-3 border border-border shadow-sm max-w-sm mx-auto space-y-3">
+                {/* 颜色模式 */}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">方块颜色</span>
+                  <div className="inline-flex rounded-lg border border-border overflow-hidden">
+                    <button
+                      onClick={() => setColorMode("rainbow")}
+                      className={cn(
+                        "px-3 py-1.5 text-xs font-bold transition-colors",
+                        colorMode === "rainbow"
+                          ? "bg-[#FF8C42] text-white"
+                          : "bg-transparent text-muted-foreground hover:bg-muted/50",
+                      )}
+                    >
+                      🌈 多彩
+                    </button>
+                    <button
+                      onClick={() => setColorMode("single")}
+                      className={cn(
+                        "px-3 py-1.5 text-xs font-bold transition-colors",
+                        colorMode === "single"
+                          ? "bg-[#FF8C42] text-white"
+                          : "bg-transparent text-muted-foreground hover:bg-muted/50",
+                      )}
+                    >
+                      🎨 单色
+                    </button>
+                  </div>
+                </div>
+
+                {/* 点击后效果 */}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">点击后</span>
+                  <div className="inline-flex rounded-lg border border-border overflow-hidden">
+                    <button
+                      onClick={() => setAutoHide(false)}
+                      className={cn(
+                        "px-3 py-1.5 text-xs font-bold transition-colors",
+                        !autoHide
+                          ? "bg-[#FF6B9D] text-white"
+                          : "bg-transparent text-muted-foreground hover:bg-muted/50",
+                      )}
+                    >
+                      ✨ 高亮
+                    </button>
+                    <button
+                      onClick={() => setAutoHide(true)}
+                      className={cn(
+                        "px-3 py-1.5 text-xs font-bold transition-colors",
+                        autoHide
+                          ? "bg-[#FF6B9D] text-white"
+                          : "bg-transparent text-muted-foreground hover:bg-muted/50",
+                      )}
+                    >
+                      👻 消失
+                    </button>
+                  </div>
+                </div>
+
+                {/* 动画模式 */}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">动画</span>
+                  <div className="inline-flex rounded-lg border border-border overflow-hidden">
+                    <button
+                      onClick={() => setAnimationMode("simple")}
+                      className={cn(
+                        "px-3 py-1.5 text-xs font-bold transition-colors",
+                        animationMode === "simple"
+                          ? "bg-[#7EC850] text-white"
+                          : "bg-transparent text-muted-foreground hover:bg-muted/50",
+                      )}
+                    >
+                      ⚡ 简易
+                    </button>
+                    <button
+                      onClick={() => setAnimationMode("rich")}
+                      className={cn(
+                        "px-3 py-1.5 text-xs font-bold transition-colors",
+                        animationMode === "rich"
+                          ? "bg-[#7EC850] text-white"
+                          : "bg-transparent text-muted-foreground hover:bg-muted/50",
+                      )}
+                    >
+                      🎬 丰富
+                    </button>
+                  </div>
+                </div>
               </div>
 
               {/* 开始按钮 */}
@@ -307,6 +419,43 @@ export function SchulteGrid() {
               >
                 开始玩！ 🎉
               </Button>
+
+              {/* 历史记录（折叠） */}
+              <div className="max-w-sm mx-auto">
+                <button
+                  onClick={() => setShowHistory(!showHistory)}
+                  className="text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+                >
+                  {showHistory ? "收起记录 ▲" : "📋 游戏记录"}
+                </button>
+                {showHistory && (
+                  <div className="mt-3 border border-border rounded-xl divide-y divide-border overflow-hidden bg-white/70 text-left">
+                    {records.length === 0 ? (
+                      <p className="text-xs text-muted-foreground/50 py-4 text-center">暂无记录</p>
+                    ) : (
+                      <>
+                        {records.slice(0, 10).map((r, i) => (
+                          <div key={r.id} className="flex items-center justify-between px-3 py-2 text-xs gap-2 hover:bg-muted/40 transition-colors group">
+                            <span className="text-muted-foreground/40 w-5">{i + 1}</span>
+                            <span className="font-bold">{r.gridSize}×{r.gridSize}</span>
+                            <span className="text-muted-foreground/50 hidden sm:inline">{r.date}</span>
+                            <span className="font-extrabold text-[#FF8C42] ml-auto">{formatTime(r.time)}s</span>
+                            <button onClick={() => deleteRecord(r.id)} className="opacity-0 group-hover:opacity-100 text-muted-foreground/30 hover:text-destructive">
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                        <button
+                          onClick={clearAllRecords}
+                          className="w-full text-center text-xs text-muted-foreground/50 hover:text-destructive py-2 transition-colors"
+                        >
+                          清空全部记录
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -328,15 +477,25 @@ export function SchulteGrid() {
                 </div>
               </div>
 
-              {/* 进度 */}
-              <div className="text-center">
-                <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground bg-white/60 rounded-full px-4 py-1.5 border border-border">
-                  {Array.from({ length: nextNumber - 1 }, (_, i) => (
-                    <span key={i}>⭐</span>
-                  ))}
-                  <span className="font-extrabold text-[#FF8C42]">{nextNumber - 1}</span>
-                  <span className="text-muted-foreground">/ {totalCells}</span>
-                </span>
+              {/* 进度条 */}
+              <div className="w-full max-w-xs mx-auto">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-extrabold text-[#FF8C42] w-7 text-right tabular-nums">
+                    {nextNumber - 1}
+                  </span>
+                  <div className="flex-1 h-4 bg-white/60 rounded-full border border-border overflow-hidden shadow-inner">
+                    <div
+                      className="h-full rounded-full transition-all duration-300 ease-out"
+                      style={{
+                        width: `${((nextNumber - 1) / totalCells) * 100}%`,
+                        background: "linear-gradient(90deg, #FFD93D, #FF8C42)",
+                      }}
+                    />
+                  </div>
+                  <span className="text-sm text-muted-foreground w-7 tabular-nums">
+                    {totalCells}
+                  </span>
+                </div>
               </div>
 
               {/* 网格 */}
@@ -345,9 +504,11 @@ export function SchulteGrid() {
                 style={{ gridTemplateColumns: `repeat(${gridSize}, 1fr)` }}
               >
                 {cells.map((cell, index) => {
-                  const colorClass = CELL_COLORS[index % CELL_COLORS.length]
+                  const colorClass = colorMode === "single" ? SINGLE_CELL_COLOR : CELL_COLORS[index % CELL_COLORS.length]
                   const isWrong = wrongClick === index
-                  const isSparking = sparkleCell === index
+                  const isSparking = sparkleCell === index && animationMode === "rich"
+                  const isHidden = autoHide && cell.clicked
+                  const isRich = animationMode === "rich"
 
                   return (
                     <button
@@ -358,23 +519,28 @@ export function SchulteGrid() {
                         "relative aspect-square rounded-2xl sm:rounded-3xl",
                         "border-2 font-extrabold",
                         "flex items-center justify-center",
-                        "transition-all duration-150",
-                        "active:scale-90",
+                        "touch-manipulation",
                         cellTextSize,
-                        // 未点击：彩色背景
-                        !cell.clicked && !isWrong && cn(
+                        // 消失模式
+                        isHidden && "opacity-0 pointer-events-none scale-50 transition-all duration-200",
+                        // 未点击：彩色 / 单色背景
+                        !cell.clicked && !isWrong && !isHidden && cn(
                           colorClass,
                           "shadow-sm hover:shadow-md hover:scale-[1.04] cursor-pointer",
+                          "transition-colors duration-75",
                         ),
-                        // 已点击：粉色 + 弹跳
-                        cell.clicked && "bg-[#FF6B9D] border-[#FF4D88] text-white shadow-md",
-                        cell.clicked && "animate-[pop-bounce_0.35s_ease-out]",
-                        // 点错：摇头
-                        isWrong && "animate-[head-shake_0.4s_ease-out] bg-[#FFE0E0] border-[#FF9999] text-[#CC5555]",
+                        // 已点击（高亮模式 — 丰富动画）
+                        cell.clicked && !autoHide && isRich && "bg-[#FF6B9D] border-[#FF4D88] text-white shadow-md animate-[pop-bounce_0.35s_ease-out]",
+                        // 已点击（高亮模式 — 简易动画）
+                        cell.clicked && !autoHide && !isRich && "bg-[#FF6B9D] border-[#FF4D88] text-white shadow-md transition-colors duration-100",
+                        // 点错 — 丰富
+                        isWrong && isRich && "animate-[head-shake_0.4s_ease-out] bg-[#FFE0E0] border-[#FF9999] text-[#CC5555]",
+                        // 点错 — 简易
+                        isWrong && !isRich && "bg-[#FFE0E0] border-[#FF9999] text-[#CC5555] transition-colors duration-100",
                       )}
                     >
-                      {cell.value}
-                      {isSparking && <Sparkles index={index} />}
+                      {!isHidden && cell.value}
+                      {isSparking && !autoHide && <Sparkles index={index} />}
                     </button>
                   )
                 })}
@@ -450,106 +616,7 @@ export function SchulteGrid() {
             </div>
           )}
 
-          {/* ════════════════════════════════════
-              家长角落（小齿轮）
-              ════════════════════════════════════ */}
-          {!showParentPanel && (
-            <div className="fixed bottom-4 right-4 z-40">
-              <button
-                onClick={() => setShowParentPanel(true)}
-                className="w-9 h-9 rounded-full bg-white/80 border border-border shadow-sm
-                           flex items-center justify-center text-muted-foreground/50
-                           hover:text-muted-foreground hover:bg-white transition-colors"
-                title="家长设置"
-              >
-                <Settings2 className="w-4 h-4" />
-              </button>
-            </div>
-          )}
 
-          {/* ── 家长面板 ── */}
-          {showParentPanel && (
-            <div className="fixed inset-0 bg-black/20 z-50 flex items-end sm:items-center justify-center p-4"
-                 onClick={() => setShowParentPanel(false)}>
-              <div
-                className="bg-white rounded-3xl shadow-xl p-6 w-full max-w-md space-y-5
-                           animate-[fade-up_0.25s_ease-out] max-h-[80vh] overflow-y-auto"
-                onClick={e => e.stopPropagation()}
-              >
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
-                    <Settings2 className="w-5 h-5 text-muted-foreground" />
-                    家长设置
-                  </h3>
-                  <button
-                    onClick={() => setShowParentPanel(false)}
-                    className="text-muted-foreground hover:text-foreground text-xl leading-none"
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                {/* 网格大小 */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium">网格难度</span>
-                    <span className="text-lg font-extrabold text-[#FF8C42]">
-                      {gridSize}×{gridSize}
-                      {gridSize === 3 ? " 🐣" : gridSize === 4 ? " 🐥" : " 🐔"}
-                    </span>
-                  </div>
-                  <Slider
-                    value={[gridSize]}
-                    onValueChange={([v]) => setGridSize(v)}
-                    min={3}
-                    max={5}
-                    step={1}
-                  />
-                  <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                    <span>简单</span>
-                    <span>挑战</span>
-                  </div>
-                </div>
-
-                {/* 历史记录 */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium">游戏记录</span>
-                    {records.length > 0 && (
-                      <button onClick={clearAllRecords} className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1">
-                        <Trash2 className="w-3 h-3" />
-                        清空
-                      </button>
-                    )}
-                  </div>
-                  {records.length === 0 ? (
-                    <p className="text-xs text-muted-foreground/50 py-4 text-center">暂无记录</p>
-                  ) : (
-                    <div className="border border-border rounded-xl divide-y divide-border overflow-hidden">
-                      {records.slice(0, 10).map((r, i) => (
-                        <div key={r.id} className="flex items-center justify-between px-3 py-2 text-xs gap-2 hover:bg-muted/40 transition-colors group">
-                          <span className="text-muted-foreground/40 w-5">{i + 1}</span>
-                          <span className="font-bold">{r.gridSize}×{r.gridSize}</span>
-                          <span className="text-muted-foreground/50 hidden sm:inline">{r.date}</span>
-                          <span className="font-extrabold text-[#FF8C42] ml-auto">{formatTime(r.time)}s</span>
-                          <button onClick={() => deleteRecord(r.id)} className="opacity-0 group-hover:opacity-100 text-muted-foreground/30 hover:text-destructive">
-                            <Trash2 className="w-3 h-3" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <Button
-                  onClick={() => setShowParentPanel(false)}
-                  className="w-full rounded-full"
-                >
-                  关 闭
-                </Button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </>
