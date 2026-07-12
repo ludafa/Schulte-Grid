@@ -2,10 +2,9 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Slider } from "@/components/ui/slider"
 import { cn } from "@/lib/utils"
-import { Trophy, Clock, RotateCcw, Sparkles, Star, History, Settings2, Play, Trash2 } from "lucide-react"
+import { RotateCcw, Settings2, Trash2 } from "lucide-react"
 
 type HighlightMode = "none" | "highlight" | "hide"
 
@@ -36,33 +35,120 @@ function formatTime(ms: number): string {
   const minutes = Math.floor(seconds / 60)
   const remainingSeconds = seconds % 60
   const remainingMs = Math.floor((ms % 1000) / 10)
-  
   if (minutes > 0) {
     return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}.${remainingMs.toString().padStart(2, "0")}`
   }
-  return `${remainingSeconds}.${remainingMs.toString().padStart(2, "0")}秒`
+  return `${remainingSeconds}.${remainingMs.toString().padStart(2, "0")}`
 }
 
-const HIGHLIGHT_MODE_LABELS: Record<HighlightMode, string> = {
-  none: "不高亮",
-  highlight: "高亮",
-  hide: "隐藏",
+const CELL_COLORS = [
+  "bg-[#FFF0E5] border-[#FFD4B8] text-[#CC7A3F]",
+  "bg-[#E8F5E9] border-[#B8D4C0] text-[#5C8A6E]",
+  "bg-[#E3F2FD] border-[#B3D8F7] text-[#4A7FAD]",
+  "bg-[#FFF9C4] border-[#F0E68C] text-[#9B8B30]",
+  "bg-[#FCE4EC] border-[#F8BBD0] text-[#C2728A]",
+  "bg-[#EDE7F6] border-[#D1C4E9] text-[#7B6BA6]",
+]
+
+const MASGOT_EMOJIS = ["🧸", "🐻", "🐰", "🐱", "🐶"]
+const MASGOT_QUOTES = [
+  "找到数字 {n} ！",
+  "下一个是 {n} 哦～",
+  "点一点数字 {n} 吧！",
+  "数字 {n} 在哪里呀？",
+  "宝宝找找 {n} ！",
+]
+
+/* ── 纸屑庆祝 ── */
+function ConfettiOverlay({ active }: { active: boolean }) {
+  const [pieces, setPieces] = useState<Array<{ id: number; left: string; delay: string; duration: string; color: string; size: number; r: string }>>([])
+
+  useEffect(() => {
+    if (!active) { setPieces([]); return }
+    const colors = ["#FFD93D", "#FF6B9D", "#7EC850", "#FF8C42", "#6BC5FF", "#C084FC"]
+    const arr = Array.from({ length: 60 }, (_, i) => ({
+      id: i,
+      left: `${Math.random() * 100}%`,
+      delay: `${Math.random() * 1.5}s`,
+      duration: `${2.5 + Math.random() * 3}s`,
+      color: colors[i % colors.length],
+      size: 7 + Math.random() * 12,
+      r: Math.random() > 0.5 ? "50%" : "2px",
+    }))
+    setPieces(arr)
+    const t = setTimeout(() => setPieces([]), 5000)
+    return () => clearTimeout(t)
+  }, [active])
+
+  if (pieces.length === 0) return null
+
+  return (
+    <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden" aria-hidden>
+      {pieces.map(p => (
+        <div
+          key={p.id}
+          className="absolute"
+          style={{
+            left: p.left,
+            top: "-16px",
+            width: p.size,
+            height: p.size * (Math.random() > 0.5 ? 1 : 1.6),
+            background: p.color,
+            borderRadius: p.r,
+            animation: `confetti-fall ${p.duration} ease-in ${p.delay} both`,
+          }}
+        />
+      ))}
+    </div>
+  )
+}
+
+/* ── 星星飞散 ── */
+const SPARKLE_DIRECTIONS = [
+  { x: -18, y: -28, e: "⭐" },
+  { x: 20, y: -22, e: "✨" },
+  { x: -5, y: -34, e: "💫" },
+  { x: -22, y: -8, e: "🌟" },
+  { x: 22, y: -8, e: "✨" },
+]
+
+function Sparkles({ index }: { index: number }) {
+  return (
+    <>
+      {SPARKLE_DIRECTIONS.map((d, i) => (
+        <span
+          key={i}
+          className="absolute text-xs pointer-events-none select-none"
+          style={{
+            top: "50%",
+            left: "50%",
+            animation: `sparkle-out 0.55s ease-out ${i * 0.06}s both`,
+            "--sx": `${d.x}px`,
+            "--sy": `${d.y}px`,
+          } as React.CSSProperties}
+        >
+          {d.e}
+        </span>
+      ))}
+    </>
+  )
 }
 
 export function SchulteGrid() {
-  const [gridSize, setGridSize] = useState(5)
-  const [highlightMode, setHighlightMode] = useState<HighlightMode>("highlight")
+  const [gridSize, setGridSize] = useState(3)
   const [cells, setCells] = useState<Cell[]>([])
   const [nextNumber, setNextNumber] = useState(1)
   const [gameState, setGameState] = useState<"idle" | "playing" | "finished">("idle")
   const [startTime, setStartTime] = useState<number | null>(null)
   const [elapsedTime, setElapsedTime] = useState(0)
   const [records, setRecords] = useState<GameRecord[]>([])
-  const [showHistory, setShowHistory] = useState(false)
-  const [showSettings, setShowSettings] = useState(true)
+  const [showParentPanel, setShowParentPanel] = useState(false)
   const [wrongClick, setWrongClick] = useState<number | null>(null)
+  const [sparkleCell, setSparkleCell] = useState<number | null>(null)
+  const [showConfetti, setShowConfetti] = useState(false)
+  const [masgotEmoji] = useState(() => MASGOT_EMOJIS[Math.floor(Math.random() * MASGOT_EMOJIS.length)])
+  const [quoteIndex, setQuoteIndex] = useState(0)
 
-  // 从 localStorage 加载记录
   useEffect(() => {
     const savedRecords = localStorage.getItem("schulte-records")
     if (savedRecords) {
@@ -70,21 +156,19 @@ export function SchulteGrid() {
     }
   }, [])
 
-  // 保存记录到 localStorage
   const saveRecord = useCallback((time: number) => {
     const newRecord: GameRecord = {
       id: Date.now().toString(),
       gridSize,
       time,
       date: new Date().toLocaleString("zh-CN"),
-      highlightMode,
+      highlightMode: "highlight",
     }
-    const updatedRecords = [newRecord, ...records].slice(0, 50) // 最多保存50条
+    const updatedRecords = [newRecord, ...records].slice(0, 50)
     setRecords(updatedRecords)
     localStorage.setItem("schulte-records", JSON.stringify(updatedRecords))
-  }, [gridSize, highlightMode, records])
+  }, [gridSize, records])
 
-  // 初始化游戏
   const initGame = useCallback(() => {
     const totalCells = gridSize * gridSize
     const numbers = Array.from({ length: totalCells }, (_, i) => i + 1)
@@ -94,11 +178,12 @@ export function SchulteGrid() {
     setGameState("idle")
     setStartTime(null)
     setElapsedTime(0)
-    setShowSettings(true)
     setWrongClick(null)
+    setSparkleCell(null)
+    setShowConfetti(false)
+    setQuoteIndex(0)
   }, [gridSize])
 
-  // 开始游戏
   const startGame = useCallback(() => {
     const totalCells = gridSize * gridSize
     const numbers = Array.from({ length: totalCells }, (_, i) => i + 1)
@@ -108,383 +193,365 @@ export function SchulteGrid() {
     setGameState("playing")
     setStartTime(Date.now())
     setElapsedTime(0)
-    setShowSettings(false)
     setWrongClick(null)
+    setSparkleCell(null)
+    setShowConfetti(false)
+    setShowParentPanel(false)
+    setQuoteIndex(0)
   }, [gridSize])
 
-  // 计时器
   useEffect(() => {
     if (gameState !== "playing" || !startTime) return
-    
     const timer = setInterval(() => {
       setElapsedTime(Date.now() - startTime)
-    }, 10)
-    
+    }, 100)
     return () => clearInterval(timer)
   }, [gameState, startTime])
 
-  // 处理点击
   const handleCellClick = useCallback((index: number) => {
     if (gameState !== "playing") return
-    
     const cell = cells[index]
     if (cell.clicked) return
-    
+
     if (cell.value === nextNumber) {
       const newCells = [...cells]
       newCells[index] = { ...cell, clicked: true }
       setCells(newCells)
       setWrongClick(null)
-      
+      setSparkleCell(index)
+      setTimeout(() => setSparkleCell(null), 600)
+
       const totalCells = gridSize * gridSize
       if (nextNumber === totalCells) {
-        // 游戏完成
         const finalTime = Date.now() - (startTime || Date.now())
         setElapsedTime(finalTime)
         setGameState("finished")
         saveRecord(finalTime)
+        setShowConfetti(true)
       } else {
-        setNextNumber(nextNumber + 1)
+        setNextNumber(n => n + 1)
+        setQuoteIndex(i => (i + 1) % MASGOT_QUOTES.length)
       }
     } else {
-      // 点错了，显示错误动画
       setWrongClick(index)
-      setTimeout(() => setWrongClick(null), 300)
+      setTimeout(() => setWrongClick(null), 400)
     }
   }, [gameState, cells, nextNumber, gridSize, startTime, saveRecord])
 
-  // 删除单条记录
   const deleteRecord = useCallback((id: string) => {
     const updatedRecords = records.filter(r => r.id !== id)
     setRecords(updatedRecords)
     localStorage.setItem("schulte-records", JSON.stringify(updatedRecords))
   }, [records])
 
-  // 清除所有记录
   const clearAllRecords = useCallback(() => {
     setRecords([])
     localStorage.removeItem("schulte-records")
   }, [])
 
-  // 当前网格大小的最佳记录
   const bestRecord = useMemo(() => {
     const sizeRecords = records.filter(r => r.gridSize === gridSize)
     if (sizeRecords.length === 0) return null
     return sizeRecords.reduce((best, curr) => curr.time < best.time ? curr : best)
   }, [records, gridSize])
 
-  // 初始化
-  useEffect(() => {
-    initGame()
-  }, [gridSize, initGame])
+  useEffect(() => { initGame() }, [gridSize, initGame])
 
   const totalCells = gridSize * gridSize
+  const currentQuote = MASGOT_QUOTES[quoteIndex].replace("{n}", String(nextNumber))
+  const cellTextSize = gridSize <= 3 ? "text-3xl sm:text-4xl" : gridSize <= 4 ? "text-2xl sm:text-3xl" : "text-xl sm:text-2xl"
+  const gridGap = gridSize <= 3 ? "gap-3" : gridSize <= 4 ? "gap-2.5" : "gap-2"
 
   return (
-    <div className="min-h-screen py-4 sm:py-8 px-4">
-      <div className="max-w-2xl mx-auto">
-        {/* 标题 */}
-        <div className="text-center mb-6 sm:mb-8">
-          <div className="inline-flex items-center gap-2 mb-2 flex-wrap justify-center">
-            <Sparkles className="w-6 sm:w-8 h-6 sm:h-8 text-primary animate-pulse" />
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">舒尔特方格</h1>
-            <Sparkles className="w-6 sm:w-8 h-6 sm:h-8 text-primary animate-pulse" />
-          </div>
-          <p className="text-xs sm:text-base text-muted-foreground">按顺序点击数字 1 到 {totalCells}，训练你的注意力!</p>
-        </div>
+    <>
+      <ConfettiOverlay active={showConfetti} />
 
-        {/* 游戏状态栏 - 游戏进行中隐藏 */}
-        {gameState !== "playing" && (
-          <Card className="mb-4 sm:mb-6 border-2 border-primary/20 shadow-lg">
-            <CardContent className="pt-4 sm:pt-6">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-                <div className="flex items-center gap-3 sm:gap-6">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 sm:w-5 h-4 sm:h-5 text-primary" />
-                    <span className="text-xl sm:text-2xl font-mono font-bold text-foreground">
-                      {formatTime(elapsedTime)}
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-1 sm:gap-2">
-                  {bestRecord && (
-                    <div className="hidden sm:flex items-center gap-1 text-accent-foreground bg-accent px-3 py-1 rounded-full">
-                      <Trophy className="w-4 h-4" />
-                      <span className="text-sm font-medium">{formatTime(bestRecord.time)}</span>
-                    </div>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setShowHistory(!showHistory)}
-                    className="rounded-full h-9 w-9 sm:h-10 sm:w-10"
-                  >
-                    <History className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setShowSettings(!showSettings)}
-                    className="rounded-full h-9 w-9 sm:h-10 sm:w-10"
-                  >
-                    <Settings2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+      <div className="min-h-screen flex flex-col items-center justify-center py-6 px-4 select-none">
+        <div className="w-full max-w-[520px]">
 
-        {/* 设置面板 - 仅在准备状态显示 */}
-        {showSettings && gameState === "idle" && (
-          <Card className="mb-6 border-2 border-secondary/30 bg-card/80 backdrop-blur">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Settings2 className="w-5 h-5 text-secondary-foreground" />
-                游戏设置
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* 网格大小 */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium">网格大小</span>
-                  <span className="text-lg font-bold text-primary">{gridSize} × {gridSize}</span>
-                </div>
-                <Slider
-                  value={[gridSize]}
-                  onValueChange={([value]) => setGridSize(value)}
-                  min={3}
-                  max={10}
-                  step={1}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                  <span>3×3 简单</span>
-                  <span>10×10 困难</span>
-                </div>
+          {/* ════════════════════════════════════
+              IDLE — 开始画面
+              ════════════════════════════════════ */}
+          {gameState === "idle" && (
+            <div className="text-center space-y-8">
+              {/* 吉祥物 */}
+              <div className="text-7xl sm:text-8xl" style={{ animation: "mascot-bounce 1.5s ease-in-out infinite" }}>
+                {masgotEmoji}
               </div>
 
-              {/* 高亮模式 */}
+              {/* 标题 */}
               <div>
-                <span className="text-sm font-medium mb-3 block">点击后效果</span>
-                <div className="flex gap-2">
-                  {(["none", "highlight", "hide"] as HighlightMode[]).map((mode) => (
-                    <Button
-                      key={mode}
-                      variant={highlightMode === mode ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setHighlightMode(mode)}
-                      className="flex-1"
-                    >
-                      {HIGHLIGHT_MODE_LABELS[mode]}
-                    </Button>
-                  ))}
-                </div>
+                <h1 className="text-4xl sm:text-5xl font-extrabold text-[#FF8C42] drop-shadow-sm">
+                  找数字 🔢
+                </h1>
+                <p className="text-base sm:text-lg text-muted-foreground mt-2">
+                  按顺序从 1 点到 {totalCells} 哟～
+                </p>
+              </div>
+
+              {/* 难度预览 */}
+              <div className="inline-flex items-center gap-2 bg-white/70 rounded-full px-5 py-2 border border-border shadow-sm">
+                <span className="text-sm text-muted-foreground">难度：</span>
+                {gridSize === 3 && <span className="text-lg">🐣 3×3</span>}
+                {gridSize === 4 && <span className="text-lg">🐥 4×4</span>}
+                {gridSize === 5 && <span className="text-lg">🐔 5×5</span>}
               </div>
 
               {/* 开始按钮 */}
               <Button
                 onClick={startGame}
-                className="w-full h-12 text-lg font-bold gap-2"
+                size="lg"
+                className="text-2xl sm:text-3xl font-extrabold h-auto py-5 px-12 rounded-full
+                           bg-[#FF8C42] hover:bg-[#FF7728] text-white shadow-lg
+                           active:scale-95 transition-transform"
               >
-                <Play className="w-5 h-5" />
-                开始游戏
+                开始玩！ 🎉
               </Button>
-            </CardContent>
-          </Card>
-        )}
+            </div>
+          )}
 
-        {/* 游戏网格 - 游戏进行中显示，完成后隐藏 */}
-        {gameState === "playing" && (
-          <Card className="mb-6 border-2 border-primary/20 shadow-xl overflow-hidden">
-            <CardContent className="p-3 sm:p-4">
+          {/* ════════════════════════════════════
+              PLAYING — 游戏进行中
+              ════════════════════════════════════ */}
+          {gameState === "playing" && (
+            <div className="space-y-5">
+              {/* 吉祥物 + 提示气泡 */}
+              <div className="flex items-end gap-2 justify-center">
+                <span className="text-4xl sm:text-5xl" style={{ animation: "float-cloud 2s ease-in-out infinite" }}>
+                  {masgotEmoji}
+                </span>
+                <div className="relative bg-white rounded-2xl rounded-bl-sm px-4 py-2.5 shadow-md border border-border max-w-[260px]">
+                  <p className="text-base sm:text-lg font-bold text-[#4A3728]">
+                    {currentQuote}
+                  </p>
+                  <div className="absolute -left-2 bottom-3 w-3 h-3 bg-white border-l border-b border-border rotate-45" />
+                </div>
+              </div>
+
+              {/* 进度 */}
+              <div className="text-center">
+                <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground bg-white/60 rounded-full px-4 py-1.5 border border-border">
+                  {Array.from({ length: nextNumber - 1 }, (_, i) => (
+                    <span key={i}>⭐</span>
+                  ))}
+                  <span className="font-extrabold text-[#FF8C42]">{nextNumber - 1}</span>
+                  <span className="text-muted-foreground">/ {totalCells}</span>
+                </span>
+              </div>
+
+              {/* 网格 */}
               <div
-                className="grid gap-2"
-                style={{
-                  gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
-                }}
+                className={cn("grid", gridGap)}
+                style={{ gridTemplateColumns: `repeat(${gridSize}, 1fr)` }}
               >
                 {cells.map((cell, index) => {
-                  const isHidden = highlightMode === "hide" && cell.clicked
-                  const isHighlighted = highlightMode === "highlight" && cell.clicked
+                  const colorClass = CELL_COLORS[index % CELL_COLORS.length]
                   const isWrong = wrongClick === index
-                  
+                  const isSparking = sparkleCell === index
+
                   return (
                     <button
                       key={index}
                       onClick={() => handleCellClick(index)}
                       disabled={cell.clicked}
                       className={cn(
-                        "aspect-square rounded-xl font-bold transition-all duration-200 transform",
+                        "relative aspect-square rounded-2xl sm:rounded-3xl",
+                        "border-2 font-extrabold",
                         "flex items-center justify-center",
-                        "shadow-md hover:shadow-lg active:scale-95",
-                        "border-2",
-                        gridSize <= 5 ? "text-lg sm:text-2xl" : gridSize <= 7 ? "text-base sm:text-xl" : "text-sm sm:text-lg",
-                        isHidden && "opacity-0 pointer-events-none",
-                        isHighlighted && "bg-green-100 border-green-400 text-green-600",
-                        isWrong && "animate-shake bg-red-100 border-red-400",
-                        !cell.clicked && !isWrong && "bg-card border-primary/30 text-foreground hover:border-primary hover:bg-primary/5",
+                        "transition-all duration-150",
+                        "active:scale-90",
+                        cellTextSize,
+                        // 未点击：彩色背景
+                        !cell.clicked && !isWrong && cn(
+                          colorClass,
+                          "shadow-sm hover:shadow-md hover:scale-[1.04] cursor-pointer",
+                        ),
+                        // 已点击：粉色 + 弹跳
+                        cell.clicked && "bg-[#FF6B9D] border-[#FF4D88] text-white shadow-md",
+                        cell.clicked && "animate-[pop-bounce_0.35s_ease-out]",
+                        // 点错：摇头
+                        isWrong && "animate-[head-shake_0.4s_ease-out] bg-[#FFE0E0] border-[#FF9999] text-[#CC5555]",
                       )}
                     >
-                      {!isHidden && cell.value}
-                      {isHighlighted && (
-                        <Star className="absolute w-3 h-3 text-green-500 -top-1 -right-1" />
-                      )}
+                      {cell.value}
+                      {isSparking && <Sparkles index={index} />}
                     </button>
                   )
                 })}
               </div>
-            </CardContent>
-          </Card>
-        )}
 
-        {/* 游戏完成 */}
-        {gameState === "finished" && (
-          <Card className="mb-4 sm:mb-6 border-2 border-accent bg-accent/20">
-            <CardContent className="pt-4 sm:pt-6 text-center">
-              <div className="flex justify-center mb-3 sm:mb-4">
-                <div className="relative">
-                  <Trophy className="w-12 sm:w-16 h-12 sm:h-16 text-yellow-500" />
-                  <Sparkles className="w-5 sm:w-6 h-5 sm:h-6 text-yellow-400 absolute -top-1 -right-1 animate-ping" />
-                </div>
-              </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-1 sm:mb-2">太棒了!</h2>
-              <p className="text-base sm:text-lg text-muted-foreground mb-3 sm:mb-4">
-                你完成了 {gridSize}×{gridSize} 的挑战
-              </p>
-              <div className="text-3xl sm:text-4xl font-mono font-bold text-primary mb-4 sm:mb-6">
-                {formatTime(elapsedTime)}
-              </div>
-              {bestRecord && elapsedTime === bestRecord.time && (
-                <div className="inline-flex items-center gap-2 bg-yellow-100 text-yellow-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-3 sm:mb-4">
-                  <Star className="w-4 sm:w-5 h-4 sm:h-5 fill-yellow-500" />
-                  <span className="text-sm sm:text-base font-bold">新纪录!</span>
-                </div>
-              )}
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center">
-                <Button onClick={startGame} className="gap-2 text-sm sm:text-base">
+              {/* 下方按钮 */}
+              <div className="flex justify-center gap-3">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={startGame}
+                  className="rounded-full text-muted-foreground text-sm gap-1"
+                >
                   <RotateCcw className="w-4 h-4" />
-                  再来一局
+                  重新来
                 </Button>
-                <Button variant="outline" onClick={() => {
-                  setShowSettings(true)
-                  setGameState("idle")
-                }} className="text-sm sm:text-base">
-                  修改设置
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => { setGameState("idle"); initGame() }}
+                  className="rounded-full text-muted-foreground text-sm"
+                >
+                  换难度
                 </Button>
               </div>
-            </CardContent>
-          </Card>
-        )}
+            </div>
+          )}
 
-        {/* 游戏中重置按钮 */}
-        {gameState === "playing" && (
-          <div className="flex justify-center gap-2 sm:gap-3 flex-col sm:flex-row">
-            <Button variant="outline" onClick={startGame} className="gap-2 text-sm sm:text-base order-2 sm:order-1">
-              <RotateCcw className="w-4 h-4" />
-              <span className="hidden sm:inline">重新开始</span>
-              <span className="sm:hidden">重新</span>
-            </Button>
-            <Button variant="ghost" onClick={() => {
-              setShowSettings(true)
-              setGameState("idle")
-            }} className="text-sm sm:text-base order-1 sm:order-2">
-              返回
-            </Button>
-          </div>
-        )}
+          {/* ════════════════════════════════════
+              FINISHED — 完成庆祝
+              ════════════════════════════════════ */}
+          {gameState === "finished" && (
+            <div className="text-center space-y-6">
+              {/* 吉祥物 */}
+              <div style={{ animation: "mascot-bounce 0.5s ease-in-out 3" }}>
+                <span className="text-7xl sm:text-8xl">🎉</span>
+              </div>
 
-        {/* 历史记录 */}
-        {showHistory && (
-          <Card className="border-2 border-muted">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between flex-col sm:flex-row gap-2">
-                <CardTitle className="text-base sm:text-lg flex items-center gap-2">
-                  <History className="w-4 sm:w-5 h-4 sm:h-5" />
-                  游戏记录
-                </CardTitle>
-                {records.length > 0 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={clearAllRecords}
-                    className="text-destructive hover:text-destructive text-xs sm:text-sm"
+              {/* 奖杯 */}
+              <div className="inline-flex items-center gap-2 bg-yellow-100 border-2 border-yellow-300 rounded-full px-5 py-2">
+                <span className="text-2xl">🏆</span>
+                <span className="text-xl sm:text-2xl font-extrabold text-[#B8860B]">
+                  太厉害了！
+                </span>
+              </div>
+
+              {/* 时间（小字，不给孩子压力） */}
+              <p className="text-sm text-muted-foreground/60">
+                用了 {formatTime(elapsedTime)} 秒完成了 {gridSize}×{gridSize}
+              </p>
+
+              {/* 按钮 */}
+              <div className="flex flex-col sm:flex-row justify-center gap-3 pt-2">
+                <Button
+                  onClick={startGame}
+                  size="lg"
+                  className="text-xl font-extrabold h-auto py-4 px-10 rounded-full
+                             bg-[#7EC850] hover:bg-[#6BB840] text-white shadow-lg
+                             active:scale-95 transition-transform gap-2"
+                >
+                  <RotateCcw className="w-5 h-5" />
+                  再来一次！
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => { setGameState("idle"); initGame() }}
+                  className="text-base rounded-full h-auto py-3 px-6"
+                >
+                  换一个难度
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* ════════════════════════════════════
+              家长角落（小齿轮）
+              ════════════════════════════════════ */}
+          {!showParentPanel && (
+            <div className="fixed bottom-4 right-4 z-40">
+              <button
+                onClick={() => setShowParentPanel(true)}
+                className="w-9 h-9 rounded-full bg-white/80 border border-border shadow-sm
+                           flex items-center justify-center text-muted-foreground/50
+                           hover:text-muted-foreground hover:bg-white transition-colors"
+                title="家长设置"
+              >
+                <Settings2 className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+
+          {/* ── 家长面板 ── */}
+          {showParentPanel && (
+            <div className="fixed inset-0 bg-black/20 z-50 flex items-end sm:items-center justify-center p-4"
+                 onClick={() => setShowParentPanel(false)}>
+              <div
+                className="bg-white rounded-3xl shadow-xl p-6 w-full max-w-md space-y-5
+                           animate-[fade-up_0.25s_ease-out] max-h-[80vh] overflow-y-auto"
+                onClick={e => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                    <Settings2 className="w-5 h-5 text-muted-foreground" />
+                    家长设置
+                  </h3>
+                  <button
+                    onClick={() => setShowParentPanel(false)}
+                    className="text-muted-foreground hover:text-foreground text-xl leading-none"
                   >
-                    <Trash2 className="w-4 h-4 mr-1" />
-                    清空
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              {records.length === 0 ? (
-                <p className="text-center text-muted-foreground py-6 sm:py-8 text-sm sm:text-base">
-                  还没有游戏记录，快开始你的第一局吧!
-                </p>
-              ) : (
-                <div className="space-y-2 max-h-64 overflow-y-auto">
-                  {records.map((record, index) => (
-                    <div
-                      key={record.id}
-                      className={cn(
-                        "flex items-center justify-between p-2 sm:p-3 rounded-lg gap-2",
-                        "bg-muted/50 hover:bg-muted transition-colors"
-                      )}
-                    >
-                      <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-                        <span className="text-xs sm:text-sm text-muted-foreground w-5 flex-shrink-0">
-                          {index + 1}.
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-xs sm:text-sm font-bold">{record.gridSize}×{record.gridSize}</span>
-                            <span className="text-xs text-muted-foreground bg-muted px-1.5 sm:px-2 py-0.5 rounded">
-                              {HIGHLIGHT_MODE_LABELS[record.highlightMode]}
-                            </span>
-                          </div>
-                          <span className="text-xs text-muted-foreground block">{record.date}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-                        <span className="font-mono font-bold text-primary text-xs sm:text-sm">
-                          {formatTime(record.time)}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-destructive"
-                          onClick={() => deleteRecord(record.id)}
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                    ✕
+                  </button>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
 
-        {/* 页脚 */}
-        <p className="text-center text-xs sm:text-sm text-muted-foreground mt-6 sm:mt-8">
-          舒尔特方格可以有效训练注意力集中能力
-        </p>
+                {/* 网格大小 */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium">网格难度</span>
+                    <span className="text-lg font-extrabold text-[#FF8C42]">
+                      {gridSize}×{gridSize}
+                      {gridSize === 3 ? " 🐣" : gridSize === 4 ? " 🐥" : " 🐔"}
+                    </span>
+                  </div>
+                  <Slider
+                    value={[gridSize]}
+                    onValueChange={([v]) => setGridSize(v)}
+                    min={3}
+                    max={5}
+                    step={1}
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                    <span>简单</span>
+                    <span>挑战</span>
+                  </div>
+                </div>
+
+                {/* 历史记录 */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium">游戏记录</span>
+                    {records.length > 0 && (
+                      <button onClick={clearAllRecords} className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1">
+                        <Trash2 className="w-3 h-3" />
+                        清空
+                      </button>
+                    )}
+                  </div>
+                  {records.length === 0 ? (
+                    <p className="text-xs text-muted-foreground/50 py-4 text-center">暂无记录</p>
+                  ) : (
+                    <div className="border border-border rounded-xl divide-y divide-border overflow-hidden">
+                      {records.slice(0, 10).map((r, i) => (
+                        <div key={r.id} className="flex items-center justify-between px-3 py-2 text-xs gap-2 hover:bg-muted/40 transition-colors group">
+                          <span className="text-muted-foreground/40 w-5">{i + 1}</span>
+                          <span className="font-bold">{r.gridSize}×{r.gridSize}</span>
+                          <span className="text-muted-foreground/50 hidden sm:inline">{r.date}</span>
+                          <span className="font-extrabold text-[#FF8C42] ml-auto">{formatTime(r.time)}s</span>
+                          <button onClick={() => deleteRecord(r.id)} className="opacity-0 group-hover:opacity-100 text-muted-foreground/30 hover:text-destructive">
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <Button
+                  onClick={() => setShowParentPanel(false)}
+                  className="w-full rounded-full"
+                >
+                  关 闭
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-
-      {/* 错误抖动动画 */}
-      <style jsx global>{`
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          20%, 60% { transform: translateX(-4px); }
-          40%, 80% { transform: translateX(4px); }
-        }
-        .animate-shake {
-          animation: shake 0.3s ease-in-out;
-        }
-      `}</style>
-    </div>
+    </>
   )
 }

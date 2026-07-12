@@ -1,29 +1,22 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Nunito } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
-const _geist = Geist({ subsets: ["latin"] });
-const _geistMono = Geist_Mono({ subsets: ["latin"] });
+const nunito = Nunito({
+  subsets: ['latin'],
+  weight: ['500', '700', '900'],
+  variable: '--font-nunito',
+})
 
 export const metadata: Metadata = {
-  title: '舒尔特方格 - 注意力训练游戏',
-  description: '可爱风格的舒尔特方格注意力测试游戏，支持自定义网格大小和多种显示模式',
-  generator: 'v0.app',
+  title: '数字小花园 🌸',
+  description: '宝宝找数字游戏，适合3-6岁小朋友的注意力小练习',
   icons: {
     icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
+      { url: '/icon-light-32x32.png', media: '(prefers-color-scheme: light)' },
+      { url: '/icon-dark-32x32.png', media: '(prefers-color-scheme: dark)' },
+      { url: '/icon.svg', type: 'image/svg+xml' },
     ],
     apple: '/apple-icon.png',
   },
@@ -31,11 +24,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="zh-CN" className="bg-background">
+    <html lang="zh-CN" className={`${nunito.variable} bg-background`}>
       <body className="font-sans antialiased">
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}
