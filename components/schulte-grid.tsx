@@ -65,6 +65,49 @@ const MASGOT_QUOTES = [
   "宝宝找找 {n} ！",
 ]
 
+/* ── 年龄段评分（5×5 基准，其他尺寸等比缩放） ── */
+type AgeGroup = "5-6" | "7-11" | "12-17" | "18+"
+
+interface RatingThresholds {
+  excellent: number  // 优秀
+  good: number      // 良好
+  average: number   // 中等
+  pass: number      // 及格
+}
+
+const AGE_THRESHOLDS: Record<AgeGroup, RatingThresholds> = {
+  "5-6":   { excellent: 30, good: 40, average: 48, pass: 55 },
+  "7-11":  { excellent: 26, good: 32, average: 40, pass: 45 },
+  "12-17": { excellent: 16, good: 18, average: 23, pass: 24 },
+  "18+":   { excellent: 12, good: 16, average: 19, pass: 20 },
+}
+
+const AGE_LABELS: Record<AgeGroup, string> = {
+  "5-6": "👶 5-6岁",
+  "7-11": "🧒 7-11岁",
+  "12-17": "🧑 12-17岁",
+  "18+": "🧔 18+岁",
+}
+
+interface Rating {
+  level: string
+  emoji: string
+  bgClass: string
+  textClass: string
+}
+
+function getRating(timeMs: number, gridSize: number, age: AgeGroup): Rating {
+  const seconds = timeMs / 1000
+  const scale = (gridSize * gridSize) / 25 // 以 5×5 为基准等比缩放
+  const t = AGE_THRESHOLDS[age]
+
+  if (seconds <= t.excellent * scale) return { level: "优秀", emoji: "🥇", bgClass: "bg-yellow-50 border-yellow-300", textClass: "text-yellow-700" }
+  if (seconds <= t.good * scale)     return { level: "良好", emoji: "🥈", bgClass: "bg-green-50 border-green-300", textClass: "text-green-700" }
+  if (seconds <= t.average * scale)  return { level: "中等", emoji: "🥉", bgClass: "bg-blue-50 border-blue-300", textClass: "text-blue-700" }
+  if (seconds <= t.pass * scale)     return { level: "及格", emoji: "✅", bgClass: "bg-orange-50 border-orange-300", textClass: "text-orange-700" }
+  return { level: "继续加油", emoji: "💪", bgClass: "bg-pink-50 border-pink-300", textClass: "text-pink-700" }
+}
+
 /* ── 纸屑庆祝 ── */
 function ConfettiOverlay({ active }: { active: boolean }) {
   const [pieces, setPieces] = useState<Array<{ id: number; left: string; delay: string; duration: string; color: string; size: number; r: string }>>([])
@@ -152,6 +195,7 @@ export function SchulteGrid() {
   const [colorMode, setColorMode] = useState<"rainbow" | "single">("rainbow")
   const [autoHide, setAutoHide] = useState(false)
   const [animationMode, setAnimationMode] = useState<"rich" | "simple">("simple")
+  const [ageGroup, setAgeGroup] = useState<AgeGroup>("5-6")
   const [wrongClick, setWrongClick] = useState<number | null>(null)
   const [sparkleCell, setSparkleCell] = useState<number | null>(null)
   const [showConfetti, setShowConfetti] = useState(false)
@@ -407,6 +451,27 @@ export function SchulteGrid() {
                     </button>
                   </div>
                 </div>
+
+                {/* 年龄区间 */}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">年龄</span>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {(Object.keys(AGE_LABELS) as AgeGroup[]).map((age) => (
+                      <button
+                        key={age}
+                        onClick={() => setAgeGroup(age)}
+                        className={cn(
+                          "px-2.5 py-1.5 text-xs font-bold rounded-lg transition-colors",
+                          ageGroup === age
+                            ? "bg-[#FFD93D] text-[#5C4A1E] shadow-sm"
+                            : "bg-muted/50 text-muted-foreground hover:bg-muted",
+                        )}
+                      >
+                        {AGE_LABELS[age]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {/* 开始按钮 */}
@@ -572,24 +637,31 @@ export function SchulteGrid() {
           {/* ════════════════════════════════════
               FINISHED — 完成庆祝
               ════════════════════════════════════ */}
-          {gameState === "finished" && (
-            <div className="text-center space-y-6">
+          {gameState === "finished" && (() => {
+            const rating = getRating(elapsedTime, gridSize, ageGroup)
+            return (
+            <div className="text-center space-y-5">
               {/* 吉祥物 */}
               <div style={{ animation: "mascot-bounce 0.5s ease-in-out 3" }}>
-                <span className="text-7xl sm:text-8xl">🎉</span>
-              </div>
-
-              {/* 奖杯 */}
-              <div className="inline-flex items-center gap-2 bg-yellow-100 border-2 border-yellow-300 rounded-full px-5 py-2">
-                <span className="text-2xl">🏆</span>
-                <span className="text-xl sm:text-2xl font-extrabold text-[#B8860B]">
-                  太厉害了！
+                <span className="text-7xl sm:text-8xl">
+                  {rating.emoji === "💪" ? masgotEmoji : "🎉"}
                 </span>
               </div>
 
-              {/* 时间（小字，不给孩子压力） */}
+              {/* 评级徽章 */}
+              <div className={cn(
+                "inline-flex items-center gap-2 border-2 rounded-full px-6 py-3 shadow-sm",
+                rating.bgClass, rating.textClass,
+              )}>
+                <span className="text-2xl">{rating.emoji}</span>
+                <span className="text-xl sm:text-2xl font-extrabold">
+                  {rating.level}！
+                </span>
+              </div>
+
+              {/* 时间 */}
               <p className="text-sm text-muted-foreground/60">
-                用了 {formatTime(elapsedTime)} 秒完成了 {gridSize}×{gridSize}
+                {formatTime(elapsedTime)} 秒 · {gridSize}×{gridSize} · {AGE_LABELS[ageGroup]}
               </p>
 
               {/* 按钮 */}
@@ -614,7 +686,8 @@ export function SchulteGrid() {
                 </Button>
               </div>
             </div>
-          )}
+            )
+          })()}
 
 
         </div>
