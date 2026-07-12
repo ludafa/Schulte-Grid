@@ -4,79 +4,89 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(0.97 0.01 340);
-  --foreground: oklch(0.3 0.05 340);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.3 0.05 340);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.3 0.05 340);
-  --primary: oklch(0.7 0.15 340);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.85 0.08 200);
-  --secondary-foreground: oklch(0.3 0.05 200);
-  --muted: oklch(0.95 0.01 340);
-  --muted-foreground: oklch(0.5 0.03 340);
-  --accent: oklch(0.85 0.12 85);
-  --accent-foreground: oklch(0.3 0.05 85);
-  --destructive: oklch(0.65 0.2 25);
-  --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.9 0.02 340);
-  --input: oklch(0.95 0.01 340);
-  --ring: oklch(0.7 0.15 340);
-  --chart-1: oklch(0.7 0.15 340);
-  --chart-2: oklch(0.75 0.12 200);
-  --chart-3: oklch(0.8 0.12 85);
-  --chart-4: oklch(0.7 0.15 160);
-  --chart-5: oklch(0.75 0.15 280);
-  --radius: 1rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* ── 数字小花园 · 儿童友好色盘 ── */
+  --background: #E8F4FD;
+  --foreground: #4A3728;
+  --card: #FFFFFF;
+  --card-foreground: #4A3728;
+  --popover: #FFFFFF;
+  --popover-foreground: #4A3728;
+  --primary: #FF8C42;
+  --primary-foreground: #FFFFFF;
+  --secondary: #FFF0E5;
+  --secondary-foreground: #8B5E3C;
+  --muted: #F0F7FF;
+  --muted-foreground: #8DAFD6;
+  --accent: #FFD93D;
+  --accent-foreground: #5C4A1E;
+  --destructive: #FF6B6B;
+  --destructive-foreground: #FFFFFF;
+  --border: #CDE3F7;
+  --input: #EEF6FD;
+  --ring: #FF8C42;
+  --radius: 1.25rem;
+  --sidebar: #E8F4FD;
+  --sidebar-foreground: #4A3728;
+  --sidebar-primary: #FF8C42;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #FFF0E5;
+  --sidebar-accent-foreground: #4A3728;
+  --sidebar-border: #CDE3F7;
+  --sidebar-ring: #FF8C42;
+  --chart-1: #FF6B9D;
+  --chart-2: #FF8C42;
+  --chart-3: #7EC850;
+  --chart-4: #6BC5FF;
+  --chart-5: #FFD93D;
+
+  /* Kid-specific tokens */
+  --pink: #FF6B9D;
+  --green: #7EC850;
+  --yellow: #FFD93D;
+  --sky: #6BC5FF;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
+  --background: #1A1D2E;
+  --foreground: #F5E6D3;
+  --card: #252840;
+  --card-foreground: #F5E6D3;
+  --popover: #252840;
+  --popover-foreground: #F5E6D3;
+  --primary: #FF9F5C;
+  --primary-foreground: #1A1D2E;
+  --secondary: #2D2140;
+  --secondary-foreground: #E0C8A8;
+  --muted: #232640;
+  --muted-foreground: #7A8BA8;
+  --accent: #FFE066;
+  --accent-foreground: #3D3020;
+  --destructive: #FF7B7B;
+  --destructive-foreground: #1A1D2E;
+  --border: #333655;
+  --input: #232640;
+  --ring: #FF9F5C;
+  --sidebar: #1A1D2E;
+  --sidebar-foreground: #F5E6D3;
+  --sidebar-primary: #FF9F5C;
+  --sidebar-primary-foreground: #1A1D2E;
+  --sidebar-accent: #2D2140;
+  --sidebar-accent-foreground: #F5E6D3;
+  --sidebar-border: #333655;
+  --sidebar-ring: #FF9F5C;
+  --chart-1: #FF8CB3;
+  --chart-2: #FF9F5C;
+  --chart-3: #8FD86A;
+  --chart-4: #7BD0FF;
+  --chart-5: #FFE066;
+  --pink: #FF8CB3;
+  --green: #8FD86A;
+  --yellow: #FFE066;
+  --sky: #7BD0FF;
 }
 
 @theme inline {
-  --font-sans: 'Geist', 'Geist Fallback';
-  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --font-sans: var(--font-nunito);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -101,10 +111,10 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 0.5rem);
+  --radius-md: calc(var(--radius) - 0.25rem);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-xl: calc(var(--radius) + 0.25rem);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -122,4 +132,55 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* ── 纸屑动画 ── */
+@keyframes confetti-fall {
+  0%   { transform: translateY(-10px) rotate(0deg) scale(1); opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translateY(105vh) rotate(720deg) scale(0.6); opacity: 0; }
+}
+
+@keyframes confetti-sway {
+  0%, 100% { margin-left: 0; }
+  25%  { margin-left: 20px; }
+  75%  { margin-left: -20px; }
+}
+
+/* ── 格子弹跳 ── */
+@keyframes pop-bounce {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.25); }
+  60%  { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+/* ── 星星飞散 ── */
+@keyframes sparkle-out {
+  0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--sx), var(--sy)) scale(0); opacity: 0; }
+}
+
+/* ── 摇头 ── */
+@keyframes head-shake {
+  0%, 100% { transform: translateX(0); }
+  15%  { transform: translateX(-4px) rotate(-3deg); }
+  30%  { transform: translateX(4px) rotate(3deg); }
+  45%  { transform: translateX(-4px) rotate(-2deg); }
+  60%  { transform: translateX(3px) rotate(1deg); }
+  75%  { transform: translateX(-2px); }
+}
+
+/* ── 漂浮云朵 ── */
+@keyframes float-cloud {
+  0%, 100% { transform: translateY(0); }
+  50%  { transform: translateY(-8px); }
+}
+
+/* ── 动物弹跳 ── */
+@keyframes mascot-bounce {
+  0%, 100% { transform: translateY(0); }
+  30%  { transform: translateY(-12px); }
+  50%  { transform: translateY(0); }
+  70%  { transform: translateY(-6px); }
 }
