@@ -61,6 +61,7 @@ export function SchulteGrid() {
   const [showHistory, setShowHistory] = useState(false)
   const [showSettings, setShowSettings] = useState(true)
   const [wrongClick, setWrongClick] = useState<number | null>(null)
+  const [correctClick, setCorrectClick] = useState<number | null>(null)
 
   // 从 localStorage 加载记录
   useEffect(() => {
@@ -96,6 +97,7 @@ export function SchulteGrid() {
     setElapsedTime(0)
     setShowSettings(true)
     setWrongClick(null)
+    setCorrectClick(null)
   }, [gridSize])
 
   // 开始游戏
@@ -110,6 +112,7 @@ export function SchulteGrid() {
     setElapsedTime(0)
     setShowSettings(false)
     setWrongClick(null)
+    setCorrectClick(null)
   }, [gridSize])
 
   // 计时器
@@ -135,6 +138,8 @@ export function SchulteGrid() {
       newCells[index] = { ...cell, clicked: true }
       setCells(newCells)
       setWrongClick(null)
+      setCorrectClick(index)
+      setTimeout(() => setCorrectClick(null), 400)
       
       const totalCells = gridSize * gridSize
       if (nextNumber === totalCells) {
@@ -298,7 +303,13 @@ export function SchulteGrid() {
 
         {/* 游戏网格 - 游戏进行中显示，完成后隐藏 */}
         {gameState === "playing" && (
-          <Card className="mb-6 border-2 border-primary/20 shadow-xl overflow-hidden">
+          <Card 
+              className="mb-6 border-2 border-primary/20 shadow-xl overflow-hidden"
+              style={{
+                backgroundImage: "radial-gradient(circle, oklch(0 0 0 / 0.04) 1px, transparent 1px)",
+                backgroundSize: "20px 20px",
+              }}
+            >
             <CardContent className="p-3 sm:p-4">
               <div
                 className="grid gap-2"
@@ -310,6 +321,7 @@ export function SchulteGrid() {
                   const isHidden = highlightMode === "hide" && cell.clicked
                   const isHighlighted = highlightMode === "highlight" && cell.clicked
                   const isWrong = wrongClick === index
+                  const isCorrect = correctClick === index
                   
                   return (
                     <button
@@ -317,21 +329,23 @@ export function SchulteGrid() {
                       onClick={() => handleCellClick(index)}
                       disabled={cell.clicked}
                       className={cn(
-                        "aspect-square rounded-xl font-bold transition-all duration-200 transform",
-                        "flex items-center justify-center",
-                        "shadow-md hover:shadow-lg active:scale-95",
-                        "border-2",
-                        gridSize <= 5 ? "text-lg sm:text-2xl" : gridSize <= 7 ? "text-base sm:text-xl" : "text-sm sm:text-lg",
-                        isHidden && "opacity-0 pointer-events-none",
-                        isHighlighted && "bg-green-100 border-green-400 text-green-600",
-                        isWrong && "animate-shake bg-red-100 border-red-400",
-                        !cell.clicked && !isWrong && "bg-card border-primary/30 text-foreground hover:border-primary hover:bg-primary/5",
+                        "aspect-square rounded-lg font-bold transition-all duration-150",
+                        "flex items-center justify-center relative",
+                        "border-2 select-none",
+                        gridSize <= 5 ? "text-xl sm:text-2xl" : gridSize <= 7 ? "text-base sm:text-xl" : "text-sm sm:text-base",
+                        // Hidden mode — dissolve away
+                        isHidden && "opacity-0 pointer-events-none scale-90",
+                        // Highlighted (completed) — uses brand palette, not generic green
+                        isHighlighted && "bg-primary/10 border-primary/30 text-primary shadow-none cursor-default",
+                        // Wrong click — destructive signal tied to design tokens
+                        isWrong && "animate-shake bg-destructive/10 border-destructive/40",
+                        // Correct click — brief pulse feedback, like a stopwatch lap
+                        isCorrect && "animate-correct-pulse ring-2 ring-primary/30",
+                        // Default unclicked state — crisp, precise, high legibility
+                        !cell.clicked && !isWrong && "bg-white dark:bg-card border-border text-foreground shadow-sm hover:border-primary/50 hover:bg-primary/5 hover:scale-[1.03] hover:shadow-md active:scale-95",
                       )}
                     >
                       {!isHidden && cell.value}
-                      {isHighlighted && (
-                        <Star className="absolute w-3 h-3 text-green-500 -top-1 -right-1" />
-                      )}
                     </button>
                   )
                 })}
@@ -474,7 +488,7 @@ export function SchulteGrid() {
         </p>
       </div>
 
-      {/* 错误抖动动画 */}
+      {/* 动画样式 */}
       <style jsx global>{`
         @keyframes shake {
           0%, 100% { transform: translateX(0); }
@@ -483,6 +497,14 @@ export function SchulteGrid() {
         }
         .animate-shake {
           animation: shake 0.3s ease-in-out;
+        }
+        @keyframes correctPulse {
+          0% { transform: scale(1); }
+          35% { transform: scale(1.07); }
+          100% { transform: scale(1); }
+        }
+        .animate-correct-pulse {
+          animation: correctPulse 0.4s cubic-bezier(0.2, 0, 0.4, 1);
         }
       `}</style>
     </div>
