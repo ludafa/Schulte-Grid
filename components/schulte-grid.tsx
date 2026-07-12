@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
 import { cn } from "@/lib/utils"
-import { RotateCcw, Settings2, Trash2 } from "lucide-react"
+import { RotateCcw, Trash2 } from "lucide-react"
 
 type HighlightMode = "none" | "highlight" | "hide"
 
@@ -142,7 +142,7 @@ export function SchulteGrid() {
   const [startTime, setStartTime] = useState<number | null>(null)
   const [elapsedTime, setElapsedTime] = useState(0)
   const [records, setRecords] = useState<GameRecord[]>([])
-  const [showParentPanel, setShowParentPanel] = useState(false)
+  const [showHistory, setShowHistory] = useState(false)
   const [wrongClick, setWrongClick] = useState<number | null>(null)
   const [sparkleCell, setSparkleCell] = useState<number | null>(null)
   const [showConfetti, setShowConfetti] = useState(false)
@@ -196,7 +196,7 @@ export function SchulteGrid() {
     setWrongClick(null)
     setSparkleCell(null)
     setShowConfetti(false)
-    setShowParentPanel(false)
+    setShowHistory(false)
     setQuoteIndex(0)
   }, [gridSize])
 
@@ -273,7 +273,7 @@ export function SchulteGrid() {
               IDLE — 开始画面
               ════════════════════════════════════ */}
           {gameState === "idle" && (
-            <div className="text-center space-y-8">
+            <div className="text-center space-y-6">
               {/* 吉祥物 */}
               <div className="text-7xl sm:text-8xl" style={{ animation: "mascot-bounce 1.5s ease-in-out infinite" }}>
                 {masgotEmoji}
@@ -289,12 +289,26 @@ export function SchulteGrid() {
                 </p>
               </div>
 
-              {/* 难度预览 */}
-              <div className="inline-flex items-center gap-2 bg-white/70 rounded-full px-5 py-2 border border-border shadow-sm">
-                <span className="text-sm text-muted-foreground">难度：</span>
-                {gridSize === 3 && <span className="text-lg">🐣 3×3</span>}
-                {gridSize === 4 && <span className="text-lg">🐥 4×4</span>}
-                {gridSize === 5 && <span className="text-lg">🐔 5×5</span>}
+              {/* 难度滑块 */}
+              <div className="bg-white/70 rounded-2xl px-5 py-4 border border-border shadow-sm max-w-sm mx-auto">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-muted-foreground">难度</span>
+                  <span className="text-xl font-extrabold text-[#FF8C42]">
+                    {gridSize}×{gridSize}
+                    {gridSize === 3 ? " 🐣" : gridSize === 4 ? " 🐥" : " 🐔"}
+                  </span>
+                </div>
+                <Slider
+                  value={[gridSize]}
+                  onValueChange={([v]) => setGridSize(v)}
+                  min={3}
+                  max={5}
+                  step={1}
+                />
+                <div className="flex justify-between text-xs text-muted-foreground/60 mt-1.5">
+                  <span>简单</span>
+                  <span>挑战</span>
+                </div>
               </div>
 
               {/* 开始按钮 */}
@@ -307,6 +321,43 @@ export function SchulteGrid() {
               >
                 开始玩！ 🎉
               </Button>
+
+              {/* 历史记录（折叠） */}
+              <div className="max-w-sm mx-auto">
+                <button
+                  onClick={() => setShowHistory(!showHistory)}
+                  className="text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+                >
+                  {showHistory ? "收起记录 ▲" : "📋 游戏记录"}
+                </button>
+                {showHistory && (
+                  <div className="mt-3 border border-border rounded-xl divide-y divide-border overflow-hidden bg-white/70 text-left">
+                    {records.length === 0 ? (
+                      <p className="text-xs text-muted-foreground/50 py-4 text-center">暂无记录</p>
+                    ) : (
+                      <>
+                        {records.slice(0, 10).map((r, i) => (
+                          <div key={r.id} className="flex items-center justify-between px-3 py-2 text-xs gap-2 hover:bg-muted/40 transition-colors group">
+                            <span className="text-muted-foreground/40 w-5">{i + 1}</span>
+                            <span className="font-bold">{r.gridSize}×{r.gridSize}</span>
+                            <span className="text-muted-foreground/50 hidden sm:inline">{r.date}</span>
+                            <span className="font-extrabold text-[#FF8C42] ml-auto">{formatTime(r.time)}s</span>
+                            <button onClick={() => deleteRecord(r.id)} className="opacity-0 group-hover:opacity-100 text-muted-foreground/30 hover:text-destructive">
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                        <button
+                          onClick={clearAllRecords}
+                          className="w-full text-center text-xs text-muted-foreground/50 hover:text-destructive py-2 transition-colors"
+                        >
+                          清空全部记录
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -328,15 +379,25 @@ export function SchulteGrid() {
                 </div>
               </div>
 
-              {/* 进度 */}
-              <div className="text-center">
-                <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground bg-white/60 rounded-full px-4 py-1.5 border border-border">
-                  {Array.from({ length: nextNumber - 1 }, (_, i) => (
-                    <span key={i}>⭐</span>
-                  ))}
-                  <span className="font-extrabold text-[#FF8C42]">{nextNumber - 1}</span>
-                  <span className="text-muted-foreground">/ {totalCells}</span>
-                </span>
+              {/* 进度条 */}
+              <div className="w-full max-w-xs mx-auto">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-extrabold text-[#FF8C42] w-7 text-right tabular-nums">
+                    {nextNumber - 1}
+                  </span>
+                  <div className="flex-1 h-4 bg-white/60 rounded-full border border-border overflow-hidden shadow-inner">
+                    <div
+                      className="h-full rounded-full transition-all duration-300 ease-out"
+                      style={{
+                        width: `${((nextNumber - 1) / totalCells) * 100}%`,
+                        background: "linear-gradient(90deg, #FFD93D, #FF8C42)",
+                      }}
+                    />
+                  </div>
+                  <span className="text-sm text-muted-foreground w-7 tabular-nums">
+                    {totalCells}
+                  </span>
+                </div>
               </div>
 
               {/* 网格 */}
@@ -450,106 +511,7 @@ export function SchulteGrid() {
             </div>
           )}
 
-          {/* ════════════════════════════════════
-              家长角落（小齿轮）
-              ════════════════════════════════════ */}
-          {!showParentPanel && (
-            <div className="fixed bottom-4 right-4 z-40">
-              <button
-                onClick={() => setShowParentPanel(true)}
-                className="w-9 h-9 rounded-full bg-white/80 border border-border shadow-sm
-                           flex items-center justify-center text-muted-foreground/50
-                           hover:text-muted-foreground hover:bg-white transition-colors"
-                title="家长设置"
-              >
-                <Settings2 className="w-4 h-4" />
-              </button>
-            </div>
-          )}
 
-          {/* ── 家长面板 ── */}
-          {showParentPanel && (
-            <div className="fixed inset-0 bg-black/20 z-50 flex items-end sm:items-center justify-center p-4"
-                 onClick={() => setShowParentPanel(false)}>
-              <div
-                className="bg-white rounded-3xl shadow-xl p-6 w-full max-w-md space-y-5
-                           animate-[fade-up_0.25s_ease-out] max-h-[80vh] overflow-y-auto"
-                onClick={e => e.stopPropagation()}
-              >
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
-                    <Settings2 className="w-5 h-5 text-muted-foreground" />
-                    家长设置
-                  </h3>
-                  <button
-                    onClick={() => setShowParentPanel(false)}
-                    className="text-muted-foreground hover:text-foreground text-xl leading-none"
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                {/* 网格大小 */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium">网格难度</span>
-                    <span className="text-lg font-extrabold text-[#FF8C42]">
-                      {gridSize}×{gridSize}
-                      {gridSize === 3 ? " 🐣" : gridSize === 4 ? " 🐥" : " 🐔"}
-                    </span>
-                  </div>
-                  <Slider
-                    value={[gridSize]}
-                    onValueChange={([v]) => setGridSize(v)}
-                    min={3}
-                    max={5}
-                    step={1}
-                  />
-                  <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                    <span>简单</span>
-                    <span>挑战</span>
-                  </div>
-                </div>
-
-                {/* 历史记录 */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium">游戏记录</span>
-                    {records.length > 0 && (
-                      <button onClick={clearAllRecords} className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1">
-                        <Trash2 className="w-3 h-3" />
-                        清空
-                      </button>
-                    )}
-                  </div>
-                  {records.length === 0 ? (
-                    <p className="text-xs text-muted-foreground/50 py-4 text-center">暂无记录</p>
-                  ) : (
-                    <div className="border border-border rounded-xl divide-y divide-border overflow-hidden">
-                      {records.slice(0, 10).map((r, i) => (
-                        <div key={r.id} className="flex items-center justify-between px-3 py-2 text-xs gap-2 hover:bg-muted/40 transition-colors group">
-                          <span className="text-muted-foreground/40 w-5">{i + 1}</span>
-                          <span className="font-bold">{r.gridSize}×{r.gridSize}</span>
-                          <span className="text-muted-foreground/50 hidden sm:inline">{r.date}</span>
-                          <span className="font-extrabold text-[#FF8C42] ml-auto">{formatTime(r.time)}s</span>
-                          <button onClick={() => deleteRecord(r.id)} className="opacity-0 group-hover:opacity-100 text-muted-foreground/30 hover:text-destructive">
-                            <Trash2 className="w-3 h-3" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <Button
-                  onClick={() => setShowParentPanel(false)}
-                  className="w-full rounded-full"
-                >
-                  关 闭
-                </Button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </>
