@@ -151,6 +151,7 @@ export function SchulteGrid() {
   const [showHistory, setShowHistory] = useState(false)
   const [colorMode, setColorMode] = useState<"rainbow" | "single">("rainbow")
   const [autoHide, setAutoHide] = useState(false)
+  const [animationMode, setAnimationMode] = useState<"rich" | "simple">("simple")
   const [wrongClick, setWrongClick] = useState<number | null>(null)
   const [sparkleCell, setSparkleCell] = useState<number | null>(null)
   const [showConfetti, setShowConfetti] = useState(false)
@@ -377,6 +378,35 @@ export function SchulteGrid() {
                     </button>
                   </div>
                 </div>
+
+                {/* 动画模式 */}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">动画</span>
+                  <div className="inline-flex rounded-lg border border-border overflow-hidden">
+                    <button
+                      onClick={() => setAnimationMode("simple")}
+                      className={cn(
+                        "px-3 py-1.5 text-xs font-bold transition-colors",
+                        animationMode === "simple"
+                          ? "bg-[#7EC850] text-white"
+                          : "bg-transparent text-muted-foreground hover:bg-muted/50",
+                      )}
+                    >
+                      ⚡ 简易
+                    </button>
+                    <button
+                      onClick={() => setAnimationMode("rich")}
+                      className={cn(
+                        "px-3 py-1.5 text-xs font-bold transition-colors",
+                        animationMode === "rich"
+                          ? "bg-[#7EC850] text-white"
+                          : "bg-transparent text-muted-foreground hover:bg-muted/50",
+                      )}
+                    >
+                      🎬 丰富
+                    </button>
+                  </div>
+                </div>
               </div>
 
               {/* 开始按钮 */}
@@ -476,8 +506,9 @@ export function SchulteGrid() {
                 {cells.map((cell, index) => {
                   const colorClass = colorMode === "single" ? SINGLE_CELL_COLOR : CELL_COLORS[index % CELL_COLORS.length]
                   const isWrong = wrongClick === index
-                  const isSparking = sparkleCell === index
+                  const isSparking = sparkleCell === index && animationMode === "rich"
                   const isHidden = autoHide && cell.clicked
+                  const isRich = animationMode === "rich"
 
                   return (
                     <button
@@ -488,21 +519,24 @@ export function SchulteGrid() {
                         "relative aspect-square rounded-2xl sm:rounded-3xl",
                         "border-2 font-extrabold",
                         "flex items-center justify-center",
-                        "transition-all duration-150",
-                        "active:scale-90",
+                        "touch-manipulation",
                         cellTextSize,
                         // 消失模式
-                        isHidden && "opacity-0 pointer-events-none scale-50",
+                        isHidden && "opacity-0 pointer-events-none scale-50 transition-all duration-200",
                         // 未点击：彩色 / 单色背景
                         !cell.clicked && !isWrong && !isHidden && cn(
                           colorClass,
                           "shadow-sm hover:shadow-md hover:scale-[1.04] cursor-pointer",
+                          "transition-colors duration-75",
                         ),
-                        // 已点击（高亮模式）：粉色 + 弹跳
-                        cell.clicked && !autoHide && "bg-[#FF6B9D] border-[#FF4D88] text-white shadow-md",
-                        cell.clicked && !autoHide && "animate-[pop-bounce_0.35s_ease-out]",
-                        // 点错：摇头
-                        isWrong && "animate-[head-shake_0.4s_ease-out] bg-[#FFE0E0] border-[#FF9999] text-[#CC5555]",
+                        // 已点击（高亮模式 — 丰富动画）
+                        cell.clicked && !autoHide && isRich && "bg-[#FF6B9D] border-[#FF4D88] text-white shadow-md animate-[pop-bounce_0.35s_ease-out]",
+                        // 已点击（高亮模式 — 简易动画）
+                        cell.clicked && !autoHide && !isRich && "bg-[#FF6B9D] border-[#FF4D88] text-white shadow-md transition-colors duration-100",
+                        // 点错 — 丰富
+                        isWrong && isRich && "animate-[head-shake_0.4s_ease-out] bg-[#FFE0E0] border-[#FF9999] text-[#CC5555]",
+                        // 点错 — 简易
+                        isWrong && !isRich && "bg-[#FFE0E0] border-[#FF9999] text-[#CC5555] transition-colors duration-100",
                       )}
                     >
                       {!isHidden && cell.value}
