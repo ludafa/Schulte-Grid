@@ -201,7 +201,7 @@ export function SchulteGrid() {
                 <div className="flex items-center gap-3 sm:gap-6">
                   <div className="flex items-center gap-2">
                     <Clock className="w-4 sm:w-5 h-4 sm:h-5 text-primary" />
-                    <span className="text-xl sm:text-2xl font-mono font-bold text-foreground">
+                    <span className="text-xl sm:text-2xl font-mono font-bold text-foreground [font-variant-numeric:tabular-nums]">
                       {formatTime(elapsedTime)}
                     </span>
                   </div>
@@ -298,7 +298,7 @@ export function SchulteGrid() {
 
         {/* 游戏网格 - 游戏进行中显示，完成后隐藏 */}
         {gameState === "playing" && (
-          <Card className="mb-6 border-2 border-primary/20 shadow-xl overflow-hidden">
+          <Card className="mb-6 border-2 border-primary/15 shadow-none overflow-hidden bg-[image:radial-gradient(circle,oklch(0.55_0.14_225/0.06)_1px,transparent_1px)] bg-[size:16px_16px]">
             <CardContent className="p-3 sm:p-4">
               <div
                 className="grid gap-2"
@@ -317,20 +317,23 @@ export function SchulteGrid() {
                       onClick={() => handleCellClick(index)}
                       disabled={cell.clicked}
                       className={cn(
-                        "aspect-square rounded-xl font-bold transition-all duration-200 transform",
-                        "flex items-center justify-center",
-                        "shadow-md hover:shadow-lg active:scale-95",
-                        "border-2",
-                        gridSize <= 5 ? "text-lg sm:text-2xl" : gridSize <= 7 ? "text-base sm:text-xl" : "text-sm sm:text-lg",
-                        isHidden && "opacity-0 pointer-events-none",
-                        isHighlighted && "bg-green-100 border-green-400 text-green-600",
-                        isWrong && "animate-shake bg-red-100 border-red-400",
-                        !cell.clicked && !isWrong && "bg-card border-primary/30 text-foreground hover:border-primary hover:bg-primary/5",
+                        "aspect-square rounded-lg font-bold transition-all duration-150",
+                        "flex items-center justify-center relative",
+                        "border-2 select-none",
+                        "[font-variant-numeric:tabular-nums]",
+                        gridSize <= 5 ? "text-xl sm:text-3xl" : gridSize <= 7 ? "text-lg sm:text-2xl" : "text-sm sm:text-lg",
+                        isHidden && "opacity-0 pointer-events-none scale-90",
+                        isHighlighted && "bg-emerald-50 border-emerald-300 text-emerald-700 line-through",
+                        isWrong && "animate-shake bg-red-50 border-red-400 text-red-600",
+                        !cell.clicked && !isWrong && "bg-white border-slate-200 text-slate-700 hover:border-primary/60 hover:bg-primary/[0.03] active:scale-[0.97]",
                       )}
                     >
-                      {!isHidden && cell.value}
-                      {isHighlighted && (
-                        <Star className="absolute w-3 h-3 text-green-500 -top-1 -right-1" />
+                      {!isHidden && (
+                        <span className={cn(
+                          isHighlighted && "opacity-60"
+                        )}>
+                          {cell.value}
+                        </span>
                       )}
                     </button>
                   )
@@ -354,7 +357,7 @@ export function SchulteGrid() {
               <p className="text-base sm:text-lg text-muted-foreground mb-3 sm:mb-4">
                 你完成了 {gridSize}×{gridSize} 的挑战
               </p>
-              <div className="text-3xl sm:text-4xl font-mono font-bold text-primary mb-4 sm:mb-6">
+              <div className="text-3xl sm:text-4xl font-mono font-bold text-primary mb-4 sm:mb-6 [font-variant-numeric:tabular-nums]">
                 {formatTime(elapsedTime)}
               </div>
               {bestRecord && elapsedTime === bestRecord.time && (
@@ -448,7 +451,7 @@ export function SchulteGrid() {
                         </div>
                       </div>
                       <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-                        <span className="font-mono font-bold text-primary text-xs sm:text-sm">
+                        <span className="font-mono font-bold text-primary text-xs sm:text-sm [font-variant-numeric:tabular-nums]">
                           {formatTime(record.time)}
                         </span>
                         <Button
