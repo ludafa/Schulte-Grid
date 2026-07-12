@@ -317,21 +317,18 @@ export function SchulteGrid() {
                       onClick={() => handleCellClick(index)}
                       disabled={cell.clicked}
                       className={cn(
-                        "aspect-square rounded-xl font-bold transition-all duration-200 transform",
+                        "aspect-square rounded-lg font-mono font-semibold tabular-nums transition-all duration-150 transform",
                         "flex items-center justify-center",
-                        "shadow-md hover:shadow-lg active:scale-95",
-                        "border-2",
-                        gridSize <= 5 ? "text-lg sm:text-2xl" : gridSize <= 7 ? "text-base sm:text-xl" : "text-sm sm:text-lg",
+                        "active:scale-95",
+                        "border select-none",
+                        gridSize <= 5 ? "text-xl sm:text-2xl" : gridSize <= 7 ? "text-lg sm:text-xl" : "text-base sm:text-lg",
                         isHidden && "opacity-0 pointer-events-none",
-                        isHighlighted && "bg-green-100 border-green-400 text-green-600",
-                        isWrong && "animate-shake bg-red-100 border-red-400",
-                        !cell.clicked && !isWrong && "bg-card border-primary/30 text-foreground hover:border-primary hover:bg-primary/5",
+                        isHighlighted && "bg-emerald-50 border-emerald-300/70 text-emerald-600/70 dark:bg-emerald-950/40 dark:border-emerald-700/50 dark:text-emerald-400/70",
+                        isWrong && "animate-shake bg-red-50 border-red-300 text-red-500 dark:bg-red-950/40 dark:border-red-700/50 dark:text-red-400",
+                        !cell.clicked && !isWrong && "bg-white dark:bg-card border-border hover:border-primary/40 hover:bg-primary/[0.03] dark:hover:border-primary/30 dark:hover:bg-primary/[0.05] text-foreground",
                       )}
                     >
                       {!isHidden && cell.value}
-                      {isHighlighted && (
-                        <Star className="absolute w-3 h-3 text-green-500 -top-1 -right-1" />
-                      )}
                     </button>
                   )
                 })}
