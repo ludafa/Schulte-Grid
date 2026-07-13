@@ -41,6 +41,13 @@ function formatTime(ms: number): string {
   return `${remainingSeconds}.${remainingMs.toString().padStart(2, "0")}`
 }
 
+function formatElapsed(ms: number): string {
+  const seconds = Math.floor(ms / 1000)
+  const minutes = Math.floor(seconds / 60)
+  const remainingSeconds = seconds % 60
+  return `${minutes} min:${remainingSeconds}s`
+}
+
 const CELL_COLORS = [
   "bg-[#FFF0E5] border-[#FFD4B8] text-[#CC7A3F]",
   "bg-[#E8F5E9] border-[#B8D4C0] text-[#5C8A6E]",
@@ -561,6 +568,13 @@ export function SchulteGrid() {
                     {totalCells}
                   </span>
                 </div>
+              </div>
+
+              {/* 已消耗时长 */}
+              <div className="text-center">
+                <span className="text-sm font-bold text-muted-foreground tabular-nums">
+                  ⏱ 本局已消耗 {formatElapsed(elapsedTime)}
+                </span>
               </div>
 
               {/* 网格 */}
