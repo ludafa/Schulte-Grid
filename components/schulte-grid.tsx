@@ -529,6 +529,16 @@ export function SchulteGrid() {
               ════════════════════════════════════ */}
           {gameState === "playing" && (
             <div className="space-y-5">
+              {/* 全局计时器 */}
+              <div className="flex justify-center">
+                <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border-2 border-[#FF8C42]/30 rounded-full px-5 py-2 shadow-sm">
+                  <span className="text-sm text-muted-foreground">⏱️</span>
+                  <span className="text-2xl sm:text-3xl font-extrabold text-[#FF8C42] tabular-nums tracking-tight">
+                    {formatTime(elapsedTime)}
+                  </span>
+                </div>
+              </div>
+
               {/* 吉祥物 + 提示气泡 */}
               <div className="flex items-end gap-2 justify-center">
                 <span className="text-4xl sm:text-5xl" style={{ animation: "float-cloud 2s ease-in-out infinite" }}>
