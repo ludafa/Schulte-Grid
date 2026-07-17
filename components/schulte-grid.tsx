@@ -108,6 +108,19 @@ function getRating(timeMs: number, gridSize: number, age: AgeGroup): Rating {
   return { level: "继续加油", emoji: "💪", bgClass: "bg-pink-50 border-pink-300", textClass: "text-pink-700" }
 }
 
+const TIMER_COLORS: Record<string, { text: string; border: string }> = {
+  "优秀":     { text: "#22c55e", border: "rgba(34,197,94,0.4)" },
+  "良好":     { text: "#84cc16", border: "rgba(132,204,22,0.4)" },
+  "中等":     { text: "#eab308", border: "rgba(234,179,8,0.4)" },
+  "及格":     { text: "#f97316", border: "rgba(249,115,22,0.4)" },
+  "继续加油": { text: "#ef4444", border: "rgba(239,68,68,0.4)" },
+}
+
+function getTimerColor(timeMs: number, gridSize: number, age: AgeGroup) {
+  const rating = getRating(timeMs, gridSize, age)
+  return TIMER_COLORS[rating.level] ?? TIMER_COLORS["继续加油"]
+}
+
 /* ── 纸屑庆祝 ── */
 function ConfettiOverlay({ active }: { active: boolean }) {
   const [pieces, setPieces] = useState<Array<{ id: number; left: string; delay: string; duration: string; color: string; size: number; r: string }>>([])
@@ -307,6 +320,11 @@ export function SchulteGrid() {
     if (sizeRecords.length === 0) return null
     return sizeRecords.reduce((best, curr) => curr.time < best.time ? curr : best)
   }, [records, gridSize])
+
+  const timerColor = useMemo(() => {
+    if (gameState !== "playing") return TIMER_COLORS["优秀"]
+    return getTimerColor(elapsedTime, gridSize, ageGroup)
+  }, [gameState, elapsedTime, gridSize, ageGroup])
 
   useEffect(() => { initGame() }, [gridSize, initGame])
 
@@ -529,6 +547,22 @@ export function SchulteGrid() {
               ════════════════════════════════════ */}
           {gameState === "playing" && (
             <div className="space-y-5">
+              {/* 全局计时器 */}
+              <div className="flex justify-center">
+                <div
+                  className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border-2 rounded-full px-5 py-2 shadow-sm transition-colors duration-500"
+                  style={{ borderColor: timerColor.border }}
+                >
+                  <span className="text-sm text-muted-foreground">⏱️</span>
+                  <span
+                    className="text-2xl sm:text-3xl font-extrabold tabular-nums tracking-tight transition-colors duration-500"
+                    style={{ color: timerColor.text }}
+                  >
+                    {formatTime(elapsedTime)}
+                  </span>
+                </div>
+              </div>
+
               {/* 吉祥物 + 提示气泡 */}
               <div className="flex items-end gap-2 justify-center">
                 <span className="text-4xl sm:text-5xl" style={{ animation: "float-cloud 2s ease-in-out infinite" }}>
