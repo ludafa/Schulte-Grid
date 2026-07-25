@@ -369,8 +369,8 @@ export function SchulteGrid() {
                   </span>
                 </div>
                 <Slider
-                  value={[gridSize]}
-                  onValueChange={([v]) => setGridSize(v)}
+                  value={gridSize}
+                  onValueChange={(v) => setGridSize(v as number)}
                   min={3}
                   max={7}
                   step={1}
