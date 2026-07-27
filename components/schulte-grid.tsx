@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, useCallback, useMemo } from "react"
-import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
 import { cn } from "@/lib/utils"
 import { RotateCcw, Trash2 } from "lucide-react"
@@ -41,38 +40,34 @@ function formatTime(ms: number): string {
   return `${remainingSeconds}.${remainingMs.toString().padStart(2, "0")}`
 }
 
+/* ── Flip7 Cell Colors ── */
 const CELL_COLORS = [
-  "bg-[#FFF0E5] border-[#FFD4B8] text-[#CC7A3F]",
-  "bg-[#E8F5E9] border-[#B8D4C0] text-[#5C8A6E]",
-  "bg-[#E3F2FD] border-[#B3D8F7] text-[#4A7FAD]",
-  "bg-[#FFF9C4] border-[#F0E68C] text-[#9B8B30]",
-  "bg-[#FCE4EC] border-[#F8BBD0] text-[#C2728A]",
-  "bg-[#EDE7F6] border-[#D1C4E9] text-[#7B6BA6]",
+  "bg-[#E8F6F5] border-[#A8DCD9] text-[#1E8C86]",
+  "bg-[#FFF8E7] border-[#FFE47A] text-[#B8960F]",
+  "bg-[#FFF0EB] border-[#FFBBA6] text-[#D45233]",
+  "bg-[#EFF8FD] border-[#B8DFF7] text-[#3A7DB8]",
+  "bg-[#F0FAF6] border-[#B8E6D0] text-[#1E7A4C]",
+  "bg-[#F5F0FA] border-[#D8C8F0] text-[#6B4FA0]",
 ]
 
-const SINGLE_CELL_COLOR = "bg-[#FFF8E1] border-[#FFE082] text-[#BF8C30]"
+const SINGLE_CELL_COLOR = "bg-[#FFF8E7] border-[#FFE47A] text-[#B8960F]"
 
-const DIFFICULTY_EMOJI: Record<number, string> = {
-  3: "🐣", 4: "🐥", 5: "🐔", 6: "🦊", 7: "🦁",
+const DIFFICULTY_LABELS: Record<number, { label: string; emoji: string }> = {
+  3: { label: "入门", emoji: "🌱" },
+  4: { label: "简单", emoji: "🌿" },
+  5: { label: "中等", emoji: "🎯" },
+  6: { label: "困难", emoji: "⚡" },
+  7: { label: "大师", emoji: "👑" },
 }
-
-const MASGOT_EMOJIS = ["🧸", "🐻", "🐰", "🐱", "🐶"]
-const MASGOT_QUOTES = [
-  "找到数字 {n} ！",
-  "下一个是 {n} 哦～",
-  "点一点数字 {n} 吧！",
-  "数字 {n} 在哪里呀？",
-  "宝宝找找 {n} ！",
-]
 
 /* ── 年龄段评分（5×5 基准，其他尺寸等比缩放） ── */
 type AgeGroup = "5-6" | "7-11" | "12-17" | "18+"
 
 interface RatingThresholds {
-  excellent: number  // 优秀
-  good: number      // 良好
-  average: number   // 中等
-  pass: number      // 及格
+  excellent: number
+  good: number
+  average: number
+  pass: number
 }
 
 const AGE_THRESHOLDS: Record<AgeGroup, RatingThresholds> = {
@@ -83,37 +78,53 @@ const AGE_THRESHOLDS: Record<AgeGroup, RatingThresholds> = {
 }
 
 const AGE_LABELS: Record<AgeGroup, string> = {
-  "5-6": "👶 5-6岁",
-  "7-11": "🧒 7-11岁",
-  "12-17": "🧑 12-17岁",
-  "18+": "🧔 18+岁",
+  "5-6": "5-6岁",
+  "7-11": "7-11岁",
+  "12-17": "12-17岁",
+  "18+": "18+岁",
 }
 
 interface Rating {
   level: string
   emoji: string
-  bgClass: string
-  textClass: string
+  textColor: string
+  bgColor: string
+  borderColor: string
 }
 
 function getRating(timeMs: number, gridSize: number, age: AgeGroup): Rating {
   const seconds = timeMs / 1000
-  const scale = (gridSize * gridSize) / 25 // 以 5×5 为基准等比缩放
+  const scale = (gridSize * gridSize) / 25
   const t = AGE_THRESHOLDS[age]
 
-  if (seconds <= t.excellent * scale) return { level: "优秀", emoji: "🥇", bgClass: "bg-yellow-50 border-yellow-300", textClass: "text-yellow-700" }
-  if (seconds <= t.good * scale)     return { level: "良好", emoji: "🥈", bgClass: "bg-green-50 border-green-300", textClass: "text-green-700" }
-  if (seconds <= t.average * scale)  return { level: "中等", emoji: "🥉", bgClass: "bg-blue-50 border-blue-300", textClass: "text-blue-700" }
-  if (seconds <= t.pass * scale)     return { level: "及格", emoji: "✅", bgClass: "bg-orange-50 border-orange-300", textClass: "text-orange-700" }
-  return { level: "继续加油", emoji: "💪", bgClass: "bg-pink-50 border-pink-300", textClass: "text-pink-700" }
+  if (seconds <= t.excellent * scale) return {
+    level: "优秀", emoji: "👑",
+    textColor: "#B8960F", bgColor: "#FFF8E7", borderColor: "#FFD23F",
+  }
+  if (seconds <= t.good * scale) return {
+    level: "良好", emoji: "🥈",
+    textColor: "#1E8C86", bgColor: "#E8F6F5", borderColor: "#2BA8A2",
+  }
+  if (seconds <= t.average * scale) return {
+    level: "中等", emoji: "🥉",
+    textColor: "#3A7DB8", bgColor: "#EFF8FD", borderColor: "#5DADE2",
+  }
+  if (seconds <= t.pass * scale) return {
+    level: "及格", emoji: "⚡",
+    textColor: "#D45233", bgColor: "#FFF0EB", borderColor: "#EF6C4A",
+  }
+  return {
+    level: "继续加油", emoji: "💪",
+    textColor: "#6B9E9B", bgColor: "#E8F6F5", borderColor: "#C5E3E0",
+  }
 }
 
-const TIMER_COLORS: Record<string, { text: string; border: string }> = {
-  "优秀":     { text: "#22c55e", border: "rgba(34,197,94,0.4)" },
-  "良好":     { text: "#84cc16", border: "rgba(132,204,22,0.4)" },
-  "中等":     { text: "#eab308", border: "rgba(234,179,8,0.4)" },
-  "及格":     { text: "#f97316", border: "rgba(249,115,22,0.4)" },
-  "继续加油": { text: "#ef4444", border: "rgba(239,68,68,0.4)" },
+const TIMER_COLORS: Record<string, { text: string; border: string; shadow: string }> = {
+  "优秀":     { text: "#B8960F", border: "rgba(255,210,63,0.5)",   shadow: "0 4px 20px rgba(255,210,63,0.30)" },
+  "良好":     { text: "#1E8C86", border: "rgba(43,168,162,0.5)",   shadow: "0 4px 20px rgba(43,168,162,0.25)" },
+  "中等":     { text: "#3A7DB8", border: "rgba(93,173,226,0.5)",   shadow: "0 4px 16px rgba(93,173,226,0.25)" },
+  "及格":     { text: "#D45233", border: "rgba(239,108,74,0.5)",   shadow: "0 4px 20px rgba(239,108,74,0.25)" },
+  "继续加油": { text: "#6B9E9B", border: "rgba(107,158,155,0.4)",  shadow: "0 2px 8px rgba(0,0,0,0.06)" },
 }
 
 function getTimerColor(timeMs: number, gridSize: number, age: AgeGroup) {
@@ -121,21 +132,22 @@ function getTimerColor(timeMs: number, gridSize: number, age: AgeGroup) {
   return TIMER_COLORS[rating.level] ?? TIMER_COLORS["继续加油"]
 }
 
-/* ── 纸屑庆祝 ── */
+/* ── Flip7 Confetti (10 pieces, varied shapes) ── */
+const FLIP7_CONFETTI_COLORS = ["#2BA8A2", "#FFD23F", "#EF6C4A", "#5DADE2", "#FFE47A", "#3CC4BD", "#FF8A6A", "#FFF8E7"]
+
 function ConfettiOverlay({ active }: { active: boolean }) {
   const [pieces, setPieces] = useState<Array<{ id: number; left: string; delay: string; duration: string; color: string; size: number; r: string }>>([])
 
   useEffect(() => {
     if (!active) { setPieces([]); return }
-    const colors = ["#FFD93D", "#FF6B9D", "#7EC850", "#FF8C42", "#6BC5FF", "#C084FC"]
-    const arr = Array.from({ length: 60 }, (_, i) => ({
+    const arr = Array.from({ length: 10 }, (_, i) => ({
       id: i,
-      left: `${Math.random() * 100}%`,
-      delay: `${Math.random() * 1.5}s`,
-      duration: `${2.5 + Math.random() * 3}s`,
-      color: colors[i % colors.length],
-      size: 7 + Math.random() * 12,
-      r: Math.random() > 0.5 ? "50%" : "2px",
+      left: `${10 + Math.random() * 80}%`,
+      delay: `${Math.random() * 0.8}s`,
+      duration: `${3.2 + Math.random() * 1.3}s`,
+      color: FLIP7_CONFETTI_COLORS[i % FLIP7_CONFETTI_COLORS.length],
+      size: 8 + Math.random() * 16,
+      r: Math.random() > 0.5 ? "50%" : "3px",
     }))
     setPieces(arr)
     const t = setTimeout(() => setPieces([]), 5000)
@@ -152,9 +164,9 @@ function ConfettiOverlay({ active }: { active: boolean }) {
           className="absolute"
           style={{
             left: p.left,
-            top: "-16px",
+            top: "-20px",
             width: p.size,
-            height: p.size * (Math.random() > 0.5 ? 1 : 1.6),
+            height: p.size * (Math.random() > 0.5 ? 1 : 1.8),
             background: p.color,
             borderRadius: p.r,
             animation: `confetti-fall ${p.duration} ease-in ${p.delay} both`,
@@ -165,16 +177,16 @@ function ConfettiOverlay({ active }: { active: boolean }) {
   )
 }
 
-/* ── 星星飞散 ── */
+/* ── Sparkles ── */
 const SPARKLE_DIRECTIONS = [
-  { x: -18, y: -28, e: "⭐" },
-  { x: 20, y: -22, e: "✨" },
-  { x: -5, y: -34, e: "💫" },
-  { x: -22, y: -8, e: "🌟" },
-  { x: 22, y: -8, e: "✨" },
+  { x: -18, y: -28, e: "✨" },
+  { x: 20, y: -22, e: "💫" },
+  { x: -5, y: -34, e: "⭐" },
+  { x: -22, y: -8, e: "✨" },
+  { x: 22, y: -8, e: "💫" },
 ]
 
-function Sparkles({ index }: { index: number }) {
+function Sparkles() {
   return (
     <>
       {SPARKLE_DIRECTIONS.map((d, i) => (
@@ -196,6 +208,117 @@ function Sparkles({ index }: { index: number }) {
   )
 }
 
+/* ── Flip7 Retro Ribbon Banner ── */
+function RibbonBanner({ text }: { text: string }) {
+  return (
+    <div className="relative inline-block">
+      <div
+        className="relative px-8 py-2 z-10"
+        style={{
+          background: "#FFF8E7",
+          border: "3px solid #1E8C86",
+          borderRadius: "4px",
+        }}
+      >
+        <span
+          className="text-sm font-extrabold tracking-[0.3em] uppercase"
+          style={{ color: "#1E8C86" }}
+        >
+          {text}
+        </span>
+      </div>
+      {/* left tail */}
+      <div
+        className="absolute top-2 -left-[10px] w-5 h-5 z-0"
+        style={{
+          background: "#F0EAD0",
+          border: "3px solid #1E8C86",
+          borderRight: "none",
+          transform: "rotate(45deg)",
+          borderRadius: "2px 0 0 2px",
+        }}
+      />
+      {/* right tail */}
+      <div
+        className="absolute top-2 -right-[10px] w-5 h-5 z-0"
+        style={{
+          background: "#F0EAD0",
+          border: "3px solid #1E8C86",
+          borderLeft: "none",
+          transform: "rotate(-45deg)",
+          borderRadius: "0 2px 2px 0",
+        }}
+      />
+    </div>
+  )
+}
+
+/* ── Fan Cards Logo Background ── */
+const FAN_CARD_COLORS = ["#2BA8A2", "#FFD23F", "#EF6C4A", "#5DADE2", "#3CC4BD"]
+const FAN_ROTATIONS = [-24, -12, 0, 12, 24]
+
+function FanCardsBackground() {
+  return (
+    <div className="relative w-40 h-32 mx-auto">
+      {FAN_CARD_COLORS.map((color, i) => (
+        <div
+          key={i}
+          className="absolute inset-0 rounded-lg border-2 border-[#1E8C86]/30"
+          style={{
+            background: color,
+            transform: `rotate(${FAN_ROTATIONS[i]}deg)`,
+            transformOrigin: "bottom center",
+            opacity: 0.85,
+          }}
+        />
+      ))}
+    </div>
+  )
+}
+
+/* ── Settings Card wrapper ── */
+function SettingsCard({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      className="rounded-2xl px-5 py-4 max-w-sm mx-auto text-left"
+      style={{
+        background: "#FFFFFF",
+        border: "1px solid #C5E3E0",
+        borderLeft: "6px solid #A8DCD9",
+        boxShadow: "0 4px 20px rgba(43,168,162,0.10)",
+      }}
+    >
+      {children}
+    </div>
+  )
+}
+
+/* ── Pill Segment Toggle ── */
+function SegmentToggle({ options, value, onChange }: {
+  options: { key: string; label: string }[]
+  value: string
+  onChange: (v: string) => void
+}) {
+  return (
+    <div className="inline-flex rounded-full border border-[#C5E3E0] overflow-hidden bg-[#E8F6F5]">
+      {options.map(opt => (
+        <button
+          key={opt.key}
+          onClick={() => onChange(opt.key)}
+          className={cn(
+            "px-4 py-1.5 text-xs font-bold transition-all duration-200",
+            value === opt.key
+              ? "bg-[#2BA8A2] text-white rounded-full shadow-[0_4px_20px_rgba(43,168,162,0.30)]"
+              : "text-[#6B9E9B] hover:text-[#1E8C86]",
+          )}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 export function SchulteGrid() {
   const [gridSize, setGridSize] = useState(3)
   const [cells, setCells] = useState<Cell[]>([])
@@ -208,12 +331,10 @@ export function SchulteGrid() {
   const [colorMode, setColorMode] = useState<"rainbow" | "single">("rainbow")
   const [autoHide, setAutoHide] = useState(false)
   const [animationMode, setAnimationMode] = useState<"rich" | "simple">("simple")
-  const [ageGroup, setAgeGroup] = useState<AgeGroup>("5-6")
+  const [ageGroup, setAgeGroup] = useState<AgeGroup>("18+")
   const [wrongClick, setWrongClick] = useState<number | null>(null)
   const [sparkleCell, setSparkleCell] = useState<number | null>(null)
   const [showConfetti, setShowConfetti] = useState(false)
-  const [masgotEmoji] = useState(() => MASGOT_EMOJIS[Math.floor(Math.random() * MASGOT_EMOJIS.length)])
-  const [quoteIndex, setQuoteIndex] = useState(0)
 
   useEffect(() => {
     const savedRecords = localStorage.getItem("schulte-records")
@@ -247,7 +368,6 @@ export function SchulteGrid() {
     setWrongClick(null)
     setSparkleCell(null)
     setShowConfetti(false)
-    setQuoteIndex(0)
   }, [gridSize])
 
   const startGame = useCallback(() => {
@@ -263,7 +383,6 @@ export function SchulteGrid() {
     setSparkleCell(null)
     setShowConfetti(false)
     setShowHistory(false)
-    setQuoteIndex(0)
   }, [gridSize])
 
   useEffect(() => {
@@ -296,7 +415,6 @@ export function SchulteGrid() {
         setShowConfetti(true)
       } else {
         setNextNumber(n => n + 1)
-        setQuoteIndex(i => (i + 1) % MASGOT_QUOTES.length)
       }
     } else {
       setWrongClick(index)
@@ -329,43 +447,60 @@ export function SchulteGrid() {
   useEffect(() => { initGame() }, [gridSize, initGame])
 
   const totalCells = gridSize * gridSize
-  const currentQuote = MASGOT_QUOTES[quoteIndex].replace("{n}", String(nextNumber))
   const cellTextSize = gridSize <= 3 ? "text-3xl sm:text-4xl" : gridSize <= 4 ? "text-2xl sm:text-3xl" : gridSize <= 5 ? "text-xl sm:text-2xl" : gridSize <= 6 ? "text-lg sm:text-xl" : "text-base sm:text-lg"
   const gridGap = gridSize <= 3 ? "gap-3" : gridSize <= 4 ? "gap-2.5" : gridSize <= 5 ? "gap-2" : gridSize <= 6 ? "gap-1.5" : "gap-1"
+  const difficulty = DIFFICULTY_LABELS[gridSize] ?? DIFFICULTY_LABELS[5]
 
   return (
     <>
       <ConfettiOverlay active={showConfetti} />
 
-      <div className="min-h-screen flex flex-col items-center justify-center py-6 px-4 select-none">
+      <div className="min-h-screen flex flex-col items-center justify-center py-8 px-4 select-none"
+        style={{ background: "#EFF8F7" }}>
         <div className="w-full max-w-[520px]">
 
           {/* ════════════════════════════════════
-              IDLE — 开始画面
+              IDLE — Setup Screen
               ════════════════════════════════════ */}
           {gameState === "idle" && (
             <div className="text-center space-y-6">
-              {/* 吉祥物 */}
-              <div className="text-7xl sm:text-8xl" style={{ animation: "mascot-bounce 1.5s ease-in-out infinite" }}>
-                {masgotEmoji}
+              {/* ── Logo: Fan Cards + Parallelogram Text + Ribbon ── */}
+              <div className="space-y-4">
+                <FanCardsBackground />
+
+                {/* Parallelogram title */}
+                <div className="flex justify-center">
+                  <div
+                    className="inline-block px-8 py-2"
+                    style={{
+                      background: "#FFF8E7",
+                      border: "3px solid #1E8C86",
+                      transform: "skewX(-6deg) rotate(-3deg)",
+                      boxShadow: "0 4px 20px rgba(43,168,162,0.12)",
+                    }}
+                  >
+                    <div style={{ transform: "skewX(6deg) rotate(3deg)" }}>
+                      <span
+                        className="text-4xl sm:text-5xl font-extrabold tracking-[0.05em]"
+                        style={{ color: "#1E8C86", textShadow: "1px 1px 0 rgba(43,168,162,0.2)" }}
+                      >
+                        舒尔特
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <RibbonBanner text="注意力挑战" />
               </div>
 
-              {/* 标题 */}
-              <div>
-                <h1 className="text-4xl sm:text-5xl font-extrabold text-[#FF8C42] drop-shadow-sm">
-                  找数字 🔢
-                </h1>
-                <p className="text-base sm:text-lg text-muted-foreground mt-2">
-                  按顺序从 1 点到 {totalCells} 哟～
-                </p>
-              </div>
-
-              {/* 难度滑块 */}
-              <div className="bg-white/70 rounded-2xl px-5 py-4 border border-border shadow-sm max-w-sm mx-auto">
+              {/* ── Difficulty ── */}
+              <SettingsCard>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-muted-foreground">难度</span>
-                  <span className="text-xl font-extrabold text-[#FF8C42]">
-                    {gridSize}×{gridSize} {DIFFICULTY_EMOJI[gridSize] ?? ""}
+                  <span className="text-sm font-bold text-[#6B9E9B] tracking-wide">难度</span>
+                  <span className="text-xl font-extrabold text-[#1E8C86]">
+                    {gridSize}×{gridSize}
+                    <span className="ml-1.5">{difficulty.emoji}</span>
+                    <span className="ml-1 text-xs font-bold text-[#6B9E9B]">{difficulty.label}</span>
                   </span>
                 </div>
                 <Slider
@@ -375,162 +510,144 @@ export function SchulteGrid() {
                   max={7}
                   step={1}
                 />
-                <div className="flex justify-between text-xs text-muted-foreground/60 mt-1.5">
-                  <span>🐣 简单</span>
-                  <span>🦁 挑战</span>
+                <div className="flex justify-between text-xs text-[#A0C8C5] mt-1.5 font-bold">
+                  <span>3×3</span>
+                  <span>7×7</span>
                 </div>
-              </div>
+              </SettingsCard>
 
-              {/* 方块颜色 + 点击效果 */}
-              <div className="bg-white/70 rounded-2xl px-5 py-3 border border-border shadow-sm max-w-sm mx-auto space-y-3">
-                {/* 颜色模式 */}
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">方块颜色</span>
-                  <div className="inline-flex rounded-lg border border-border overflow-hidden">
-                    <button
-                      onClick={() => setColorMode("rainbow")}
-                      className={cn(
-                        "px-3 py-1.5 text-xs font-bold transition-colors",
-                        colorMode === "rainbow"
-                          ? "bg-[#FF8C42] text-white"
-                          : "bg-transparent text-muted-foreground hover:bg-muted/50",
-                      )}
-                    >
-                      🌈 多彩
-                    </button>
-                    <button
-                      onClick={() => setColorMode("single")}
-                      className={cn(
-                        "px-3 py-1.5 text-xs font-bold transition-colors",
-                        colorMode === "single"
-                          ? "bg-[#FF8C42] text-white"
-                          : "bg-transparent text-muted-foreground hover:bg-muted/50",
-                      )}
-                    >
-                      🎨 单色
-                    </button>
+              {/* ── Options ── */}
+              <SettingsCard>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold text-[#6B9E9B] tracking-wide">方块颜色</span>
+                    <SegmentToggle
+                      options={[{ key: "rainbow", label: "🌈 多彩" }, { key: "single", label: "🎨 单色" }]}
+                      value={colorMode}
+                      onChange={(v) => setColorMode(v as "rainbow" | "single")}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold text-[#6B9E9B] tracking-wide">点击后</span>
+                    <SegmentToggle
+                      options={[{ key: "highlight", label: "✨ 高亮" }, { key: "hide", label: "👻 消失" }]}
+                      value={autoHide ? "hide" : "highlight"}
+                      onChange={(v) => setAutoHide(v === "hide")}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold text-[#6B9E9B] tracking-wide">动画</span>
+                    <SegmentToggle
+                      options={[{ key: "simple", label: "⚡ 简易" }, { key: "rich", label: "🎬 丰富" }]}
+                      value={animationMode}
+                      onChange={(v) => setAnimationMode(v as "rich" | "simple")}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold text-[#6B9E9B] tracking-wide">年龄</span>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {(Object.keys(AGE_LABELS) as AgeGroup[]).map((age) => (
+                        <button
+                          key={age}
+                          onClick={() => setAgeGroup(age)}
+                          className={cn(
+                            "px-2.5 py-1.5 text-xs font-bold rounded-full transition-all duration-200",
+                            ageGroup === age
+                              ? "bg-[#FFD23F] text-[#5C4A1E] shadow-[0_4px_20px_rgba(255,210,63,0.40)]"
+                              : "bg-[#E8F6F5] text-[#6B9E9B] hover:bg-[#C5E3E0]",
+                          )}
+                        >
+                          {AGE_LABELS[age]}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
+              </SettingsCard>
 
-                {/* 点击后效果 */}
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">点击后</span>
-                  <div className="inline-flex rounded-lg border border-border overflow-hidden">
-                    <button
-                      onClick={() => setAutoHide(false)}
-                      className={cn(
-                        "px-3 py-1.5 text-xs font-bold transition-colors",
-                        !autoHide
-                          ? "bg-[#FF6B9D] text-white"
-                          : "bg-transparent text-muted-foreground hover:bg-muted/50",
-                      )}
-                    >
-                      ✨ 高亮
-                    </button>
-                    <button
-                      onClick={() => setAutoHide(true)}
-                      className={cn(
-                        "px-3 py-1.5 text-xs font-bold transition-colors",
-                        autoHide
-                          ? "bg-[#FF6B9D] text-white"
-                          : "bg-transparent text-muted-foreground hover:bg-muted/50",
-                      )}
-                    >
-                      👻 消失
-                    </button>
-                  </div>
-                </div>
-
-                {/* 动画模式 */}
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">动画</span>
-                  <div className="inline-flex rounded-lg border border-border overflow-hidden">
-                    <button
-                      onClick={() => setAnimationMode("simple")}
-                      className={cn(
-                        "px-3 py-1.5 text-xs font-bold transition-colors",
-                        animationMode === "simple"
-                          ? "bg-[#7EC850] text-white"
-                          : "bg-transparent text-muted-foreground hover:bg-muted/50",
-                      )}
-                    >
-                      ⚡ 简易
-                    </button>
-                    <button
-                      onClick={() => setAnimationMode("rich")}
-                      className={cn(
-                        "px-3 py-1.5 text-xs font-bold transition-colors",
-                        animationMode === "rich"
-                          ? "bg-[#7EC850] text-white"
-                          : "bg-transparent text-muted-foreground hover:bg-muted/50",
-                      )}
-                    >
-                      🎬 丰富
-                    </button>
-                  </div>
-                </div>
-
-                {/* 年龄区间 */}
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">年龄</span>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {(Object.keys(AGE_LABELS) as AgeGroup[]).map((age) => (
-                      <button
-                        key={age}
-                        onClick={() => setAgeGroup(age)}
-                        className={cn(
-                          "px-2.5 py-1.5 text-xs font-bold rounded-lg transition-colors",
-                          ageGroup === age
-                            ? "bg-[#FFD93D] text-[#5C4A1E] shadow-sm"
-                            : "bg-muted/50 text-muted-foreground hover:bg-muted",
-                        )}
-                      >
-                        {AGE_LABELS[age]}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* 开始按钮 */}
-              <Button
+              {/* ── Gold CTA ── */}
+              <button
                 onClick={startGame}
-                size="lg"
-                className="text-2xl sm:text-3xl font-extrabold h-auto py-5 px-12 rounded-full
-                           bg-[#FF8C42] hover:bg-[#FF7728] text-white shadow-lg
-                           active:scale-95 transition-transform"
+                className={cn(
+                  "block mx-auto relative text-2xl sm:text-3xl font-extrabold h-auto py-5 px-14 rounded-full",
+                  "text-[#5C4A1E] active:scale-95 transition-transform duration-150",
+                  "overflow-hidden",
+                )}
+                style={{
+                  background: "linear-gradient(135deg, #FFD23F 0%, #FFE47A 50%, #FFD23F 100%)",
+                  boxShadow: "0 4px 20px rgba(255,210,63,0.40), 0 2px 0 #E6B800",
+                }}
               >
-                开始玩！ 🎉
-              </Button>
+                <span
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background: "linear-gradient(180deg, rgba(255,255,255,0.4) 0%, transparent 50%)",
+                    borderRadius: "9999px",
+                  }}
+                />
+                <span className="relative z-10">开始挑战</span>
+              </button>
 
-              {/* 历史记录（折叠） */}
+              {/* ── Best Record ── */}
+              {bestRecord && (
+                <div
+                  className="inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-bold"
+                  style={{
+                    background: "#FFF8E7",
+                    border: "2px solid #FFE47A",
+                    color: "#B8960F",
+                    boxShadow: "0 4px 20px rgba(255,210,63,0.20)",
+                  }}
+                >
+                  🏆 最佳: {formatTime(bestRecord.time)}s
+                </div>
+              )}
+
+              {/* ── History ── */}
               <div className="max-w-sm mx-auto">
                 <button
                   onClick={() => setShowHistory(!showHistory)}
-                  className="text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+                  className="text-xs font-bold tracking-wide text-[#A0C8C5] hover:text-[#2BA8A2] transition-colors"
                 >
-                  {showHistory ? "收起记录 ▲" : "📋 游戏记录"}
+                  {showHistory ? "收起记录 ▲" : "📋 历史记录"}
                 </button>
                 {showHistory && (
-                  <div className="mt-3 border border-border rounded-xl divide-y divide-border overflow-hidden bg-white/70 text-left">
+                  <div
+                    className="mt-3 rounded-2xl overflow-hidden text-left"
+                    style={{
+                      background: "#FFFFFF",
+                      border: "1px solid #C5E3E0",
+                      boxShadow: "0 4px 20px rgba(43,168,162,0.10)",
+                    }}
+                  >
                     {records.length === 0 ? (
-                      <p className="text-xs text-muted-foreground/50 py-4 text-center">暂无记录</p>
+                      <p className="text-xs text-[#A0C8C5] py-6 text-center font-bold">
+                        暂无记录，来挑战第一局吧！
+                      </p>
                     ) : (
                       <>
                         {records.slice(0, 10).map((r, i) => (
-                          <div key={r.id} className="flex items-center justify-between px-3 py-2 text-xs gap-2 hover:bg-muted/40 transition-colors group">
-                            <span className="text-muted-foreground/40 w-5">{i + 1}</span>
-                            <span className="font-bold">{r.gridSize}×{r.gridSize}</span>
-                            <span className="text-muted-foreground/50 hidden sm:inline">{r.date}</span>
-                            <span className="font-extrabold text-[#FF8C42] ml-auto">{formatTime(r.time)}s</span>
-                            <button onClick={() => deleteRecord(r.id)} className="opacity-0 group-hover:opacity-100 text-muted-foreground/30 hover:text-destructive">
+                          <div
+                            key={r.id}
+                            className="flex items-center justify-between px-4 py-3 text-xs gap-2 hover:bg-[#E8F6F5] transition-colors group border-b border-[#C5E3E0]/50 last:border-b-0"
+                          >
+                            <span className="text-[#A0C8C5] font-bold w-5">{i + 1}</span>
+                            <span className="font-bold text-[#1E8C86]">{r.gridSize}×{r.gridSize}</span>
+                            <span className="text-[#A0C8C5] hidden sm:inline">{r.date}</span>
+                            <span className="font-extrabold ml-auto" style={{ color: "#2BA8A2" }}>
+                              {formatTime(r.time)}s
+                            </span>
+                            <button
+                              onClick={() => deleteRecord(r.id)}
+                              className="opacity-0 group-hover:opacity-100 text-[#A0C8C5] hover:text-[#EF6C4A] transition-all"
+                            >
                               <Trash2 className="w-3 h-3" />
                             </button>
                           </div>
                         ))}
                         <button
                           onClick={clearAllRecords}
-                          className="w-full text-center text-xs text-muted-foreground/50 hover:text-destructive py-2 transition-colors"
+                          className="w-full text-center text-xs font-bold text-[#A0C8C5] hover:text-[#EF6C4A] py-3 transition-colors border-t border-[#C5E3E0]/50"
                         >
                           清空全部记录
                         </button>
@@ -543,17 +660,20 @@ export function SchulteGrid() {
           )}
 
           {/* ════════════════════════════════════
-              PLAYING — 游戏进行中
+              PLAYING — Game In Progress
               ════════════════════════════════════ */}
           {gameState === "playing" && (
             <div className="space-y-5">
-              {/* 全局计时器 */}
+              {/* ── Timer Pill ── */}
               <div className="flex justify-center">
                 <div
-                  className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border-2 rounded-full px-5 py-2 shadow-sm transition-colors duration-500"
-                  style={{ borderColor: timerColor.border }}
+                  className="inline-flex items-center gap-2 bg-white rounded-full px-6 py-2.5 transition-all duration-500"
+                  style={{
+                    border: `2px solid ${timerColor.border}`,
+                    boxShadow: timerColor.shadow,
+                  }}
                 >
-                  <span className="text-sm text-muted-foreground">⏱️</span>
+                  <span className="text-lg">⏱️</span>
                   <span
                     className="text-2xl sm:text-3xl font-extrabold tabular-nums tracking-tight transition-colors duration-500"
                     style={{ color: timerColor.text }}
@@ -563,41 +683,42 @@ export function SchulteGrid() {
                 </div>
               </div>
 
-              {/* 吉祥物 + 提示气泡 */}
-              <div className="flex items-end gap-2 justify-center">
-                <span className="text-4xl sm:text-5xl" style={{ animation: "float-cloud 2s ease-in-out infinite" }}>
-                  {masgotEmoji}
-                </span>
-                <div className="relative bg-white rounded-2xl rounded-bl-sm px-4 py-2.5 shadow-md border border-border max-w-[260px]">
-                  <p className="text-base sm:text-lg font-bold text-[#4A3728]">
-                    {currentQuote}
-                  </p>
-                  <div className="absolute -left-2 bottom-3 w-3 h-3 bg-white border-l border-b border-border rotate-45" />
-                </div>
-              </div>
-
-              {/* 进度条 */}
+              {/* ── Progress Bar ── */}
               <div className="w-full max-w-xs mx-auto">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-extrabold text-[#FF8C42] w-7 text-right tabular-nums">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-sm font-extrabold w-7 text-right tabular-nums" style={{ color: "#2BA8A2" }}>
                     {nextNumber - 1}
                   </span>
-                  <div className="flex-1 h-4 bg-white/60 rounded-full border border-border overflow-hidden shadow-inner">
+                  <div
+                    className="flex-1 h-4 rounded-full overflow-hidden"
+                    style={{
+                      background: "#E8F6F5",
+                      border: "1px solid #C5E3E0",
+                      boxShadow: "inset 0 2px 4px rgba(0,0,0,0.04)",
+                    }}
+                  >
                     <div
                       className="h-full rounded-full transition-all duration-300 ease-out"
                       style={{
                         width: `${((nextNumber - 1) / totalCells) * 100}%`,
-                        background: "linear-gradient(90deg, #FFD93D, #FF8C42)",
+                        background: "linear-gradient(90deg, #2BA8A2, #FFD23F)",
+                        boxShadow: "0 0 8px rgba(43,168,162,0.3)",
                       }}
                     />
                   </div>
-                  <span className="text-sm text-muted-foreground w-7 tabular-nums">
-                    {totalCells}
-                  </span>
+                  <span className="text-sm text-[#6B9E9B] w-7 tabular-nums">{totalCells}</span>
                 </div>
               </div>
 
-              {/* 网格 */}
+              {/* ── Target hint ── */}
+              <div className="text-center">
+                <span className="text-sm font-bold text-[#6B9E9B] tracking-wide">下一个:</span>
+                <span className="ml-2 text-2xl font-extrabold" style={{ color: "#2BA8A2" }}>
+                  {nextNumber}
+                </span>
+              </div>
+
+              {/* ── Grid ── */}
               <div
                 className={cn("grid", gridGap)}
                 style={{ gridTemplateColumns: `repeat(${gridSize}, 1fr)` }}
@@ -620,109 +741,157 @@ export function SchulteGrid() {
                         "flex items-center justify-center",
                         "touch-manipulation",
                         cellTextSize,
-                        // 消失模式
+                        // Hidden mode
                         isHidden && "opacity-0 pointer-events-none scale-50 transition-all duration-200",
-                        // 未点击：彩色 / 单色背景
+                        // Unclicked
                         !cell.clicked && !isWrong && !isHidden && cn(
                           colorClass,
-                          "shadow-sm hover:shadow-md hover:scale-[1.04] cursor-pointer",
-                          "transition-colors duration-75",
+                          "hover:scale-[1.04] cursor-pointer transition-transform duration-75",
+                          "shadow-[0_4px_20px_rgba(43,168,162,0.08)]",
                         ),
-                        // 已点击（高亮模式 — 丰富动画）
-                        cell.clicked && !autoHide && isRich && "bg-[#FF6B9D] border-[#FF4D88] text-white shadow-md animate-[pop-bounce_0.35s_ease-out]",
-                        // 已点击（高亮模式 — 简易动画）
-                        cell.clicked && !autoHide && !isRich && "bg-[#FF6B9D] border-[#FF4D88] text-white shadow-md transition-colors duration-100",
-                        // 点错 — 丰富
-                        isWrong && isRich && "animate-[head-shake_0.4s_ease-out] bg-[#FFE0E0] border-[#FF9999] text-[#CC5555]",
-                        // 点错 — 简易
-                        isWrong && !isRich && "bg-[#FFE0E0] border-[#FF9999] text-[#CC5555] transition-colors duration-100",
+                        // Clicked (highlight, rich)
+                        cell.clicked && !autoHide && isRich && cn(
+                          "bg-[#2BA8A2] border-[#1E8C86] text-white",
+                          "shadow-[0_4px_20px_rgba(43,168,162,0.35)]",
+                          "animate-[pop-bounce_0.35s_ease-out]",
+                        ),
+                        // Clicked (highlight, simple)
+                        cell.clicked && !autoHide && !isRich && cn(
+                          "bg-[#2BA8A2] border-[#1E8C86] text-white",
+                          "shadow-[0_4px_20px_rgba(43,168,162,0.25)]",
+                          "transition-colors duration-100",
+                        ),
+                        // Wrong (rich)
+                        isWrong && isRich && cn(
+                          "animate-[head-shake_0.4s_ease-out]",
+                          "bg-[#FFF0EB] border-[#EF6C4A] text-[#D45233]",
+                          "shadow-[0_4px_20px_rgba(239,108,74,0.25)]",
+                        ),
+                        // Wrong (simple)
+                        isWrong && !isRich && cn(
+                          "bg-[#FFF0EB] border-[#EF6C4A] text-[#D45233]",
+                          "transition-colors duration-100",
+                        ),
                       )}
                     >
                       {!isHidden && cell.value}
-                      {isSparking && !autoHide && <Sparkles index={index} />}
+                      {isSparking && !autoHide && <Sparkles />}
                     </button>
                   )
                 })}
               </div>
 
-              {/* 下方按钮 */}
+              {/* ── Bottom Buttons ── */}
               <div className="flex justify-center gap-3">
-                <Button
-                  variant="ghost"
-                  size="sm"
+                <button
+                  onClick={() => { setGameState("idle"); initGame() }}
+                  className="inline-flex items-center gap-1.5 rounded-full px-5 py-2.5 text-sm font-bold
+                             bg-[#FFF8E7] text-[#B8960F] hover:bg-[#FFE47A]
+                             border border-[#FFE47A] transition-all duration-150"
+                >
+                  换难度
+                </button>
+                <button
                   onClick={startGame}
-                  className="rounded-full text-muted-foreground text-sm gap-1"
+                  className="inline-flex items-center gap-1.5 rounded-full px-5 py-2.5 text-sm font-bold
+                             bg-[#E8F6F5] text-[#6B9E9B] hover:bg-[#C5E3E0] hover:text-[#1E8C86]
+                             border border-[#C5E3E0] transition-all duration-150"
                 >
                   <RotateCcw className="w-4 h-4" />
                   重新来
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => { setGameState("idle"); initGame() }}
-                  className="rounded-full text-muted-foreground text-sm"
-                >
-                  换难度
-                </Button>
+                </button>
               </div>
             </div>
           )}
 
           {/* ════════════════════════════════════
-              FINISHED — 完成庆祝
+              FINISHED — Victory Celebration
               ════════════════════════════════════ */}
           {gameState === "finished" && (() => {
             const rating = getRating(elapsedTime, gridSize, ageGroup)
+            const isExcellent = rating.level === "优秀"
             return (
-            <div className="text-center space-y-5">
-              {/* 吉祥物 */}
-              <div style={{ animation: "mascot-bounce 0.5s ease-in-out 3" }}>
-                <span className="text-7xl sm:text-8xl">
-                  {rating.emoji === "💪" ? masgotEmoji : "🎉"}
-                </span>
+            <div className="text-center space-y-6">
+              {/* ── Crown / Emoji ── */}
+              <div
+                className="inline-block"
+                style={{ animation: isExcellent ? "crown-bounce 1.5s ease-in-out infinite" : undefined }}
+              >
+                <span className="text-7xl sm:text-8xl">{rating.emoji}</span>
               </div>
 
-              {/* 评级徽章 */}
-              <div className={cn(
-                "inline-flex items-center gap-2 border-2 rounded-full px-6 py-3 shadow-sm",
-                rating.bgClass, rating.textClass,
-              )}>
+              {/* ── Rating Badge ── */}
+              <div
+                className="inline-flex items-center gap-2 border-2 rounded-full px-7 py-3"
+                style={{
+                  background: rating.bgColor,
+                  borderColor: rating.borderColor,
+                  boxShadow: isExcellent
+                    ? "0 4px 20px rgba(255,210,63,0.40)"
+                    : "0 4px 20px rgba(43,168,162,0.15)",
+                  animation: isExcellent ? "glow-pulse 2s ease-in-out infinite" : undefined,
+                }}
+              >
                 <span className="text-2xl">{rating.emoji}</span>
-                <span className="text-xl sm:text-2xl font-extrabold">
+                <span
+                  className="text-xl sm:text-2xl font-extrabold"
+                  style={{ color: rating.textColor }}
+                >
                   {rating.level}！
                 </span>
               </div>
 
-              {/* 时间 */}
-              <p className="text-sm text-muted-foreground/60">
-                {formatTime(elapsedTime)} 秒 · {gridSize}×{gridSize} · {AGE_LABELS[ageGroup]}
-              </p>
+              {/* ── Time ── */}
+              <div className="space-y-1">
+                <p className="text-4xl sm:text-5xl font-extrabold tracking-tight" style={{ color: "#1E8C86" }}>
+                  {formatTime(elapsedTime)}
+                  <span className="text-lg font-bold text-[#6B9E9B] ml-1">秒</span>
+                </p>
+                <p className="text-sm font-bold text-[#A0C8C5]">
+                  {gridSize}×{gridSize} · {AGE_LABELS[ageGroup]}
+                </p>
+              </div>
 
-              {/* 按钮 */}
+              {/* ── Action Buttons ── */}
               <div className="flex flex-col sm:flex-row justify-center gap-3 pt-2">
-                <Button
+                <button
                   onClick={startGame}
-                  size="lg"
-                  className="text-xl font-extrabold h-auto py-4 px-10 rounded-full
-                             bg-[#7EC850] hover:bg-[#6BB840] text-white shadow-lg
-                             active:scale-95 transition-transform gap-2"
+                  className={cn(
+                    "relative text-xl font-extrabold h-auto py-4 px-10 rounded-full",
+                    "text-white active:scale-95 transition-transform duration-150",
+                    "overflow-hidden",
+                  )}
+                  style={{
+                    background: "linear-gradient(135deg, #2BA8A2 0%, #3CC4BD 100%)",
+                    boxShadow: "0 4px 20px rgba(43,168,162,0.30), 0 2px 0 #1E8C86",
+                  }}
                 >
-                  <RotateCcw className="w-5 h-5" />
-                  再来一次！
-                </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
+                  <span
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      background: "linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 50%)",
+                      borderRadius: "9999px",
+                    }}
+                  />
+                  <span className="relative z-10 flex items-center justify-center gap-2">
+                    <RotateCcw className="w-5 h-5" />
+                    再来一次
+                  </span>
+                </button>
+                <button
                   onClick={() => { setGameState("idle"); initGame() }}
-                  className="text-base rounded-full h-auto py-3 px-6"
+                  className="text-base font-bold rounded-full h-auto py-3 px-8
+                             bg-white text-[#1E8C86] border-2 border-[#C5E3E0]
+                             hover:border-[#2BA8A2] hover:text-[#2BA8A2]
+                             transition-all duration-150"
+                  style={{ boxShadow: "0 4px 20px rgba(43,168,162,0.08)" }}
                 >
                   换一个难度
-                </Button>
+                </button>
               </div>
             </div>
             )
           })()}
-
 
         </div>
       </div>
