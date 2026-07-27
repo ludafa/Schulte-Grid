@@ -511,7 +511,7 @@ export function SchulteGrid() {
                 onClick={startGame}
                 size="lg"
                 className="text-2xl sm:text-3xl font-extrabold h-auto py-5 px-12 rounded-full
-                           bg-primary hover:bg-[#E09815] text-primary-foreground shadow-lg
+                           bg-accent hover:bg-[#6A45B0] text-accent-foreground shadow-lg
                            active:scale-95 transition-transform gap-2"
               >
                 <Flower2 className="w-7 h-7" />
@@ -758,7 +758,7 @@ export function SchulteGrid() {
                   onClick={startGame}
                   size="lg"
                   className="text-xl font-extrabold h-auto py-4 px-10 rounded-full
-                             bg-mint hover:bg-[#6BA885] text-white shadow-lg
+                             bg-accent hover:bg-[#6A45B0] text-accent-foreground shadow-lg
                              active:scale-95 transition-transform gap-2"
                 >
                   <Flower2 className="w-5 h-5" />
