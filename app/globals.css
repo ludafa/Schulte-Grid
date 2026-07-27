@@ -4,89 +4,128 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* ── 数字小花园 · 儿童友好色盘 ── */
-  --background: #E8F4FD;
-  --foreground: #4A3728;
-  --card: #FFFFFF;
-  --card-foreground: #4A3728;
-  --popover: #FFFFFF;
-  --popover-foreground: #4A3728;
-  --primary: #FF8C42;
-  --primary-foreground: #FFFFFF;
-  --secondary: #FFF0E5;
-  --secondary-foreground: #8B5E3C;
-  --muted: #F0F7FF;
-  --muted-foreground: #8DAFD6;
-  --accent: #FFD93D;
-  --accent-foreground: #5C4A1E;
-  --destructive: #FF6B6B;
-  --destructive-foreground: #FFFFFF;
-  --border: #CDE3F7;
-  --input: #EEF6FD;
-  --ring: #FF8C42;
-  --radius: 1.25rem;
-  --sidebar: #E8F4FD;
-  --sidebar-foreground: #4A3728;
-  --sidebar-primary: #FF8C42;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #FFF0E5;
-  --sidebar-accent-foreground: #4A3728;
-  --sidebar-border: #CDE3F7;
-  --sidebar-ring: #FF8C42;
-  --chart-1: #FF6B9D;
-  --chart-2: #FF8C42;
-  --chart-3: #7EC850;
-  --chart-4: #6BC5FF;
-  --chart-5: #FFD93D;
+  /* ── Flip7 Design System ── */
+  /* Primary Teal */
+  --flip7-teal: #2BA8A2;
+  --flip7-teal-light: #3CC4BD;
+  --flip7-teal-dark: #1E8C86;
+  --flip7-teal-bg: #E8F6F5;
 
-  /* Kid-specific tokens */
-  --pink: #FF6B9D;
-  --green: #7EC850;
-  --yellow: #FFD93D;
-  --sky: #6BC5FF;
+  /* Accent Gold */
+  --flip7-gold: #FFD23F;
+  --flip7-gold-light: #FFE47A;
+  --flip7-gold-dark: #E6B800;
+
+  /* Coral */
+  --flip7-coral: #EF6C4A;
+  --flip7-coral-light: #FF8A6A;
+  --flip7-coral-dark: #D45233;
+
+  /* Cream */
+  --flip7-cream: #FFF8E7;
+
+  /* Sky Blue */
+  --flip7-sky: #5DADE2;
+
+  /* Surfaces */
+  --flip7-surface-base: #EFF8F7;
+  --flip7-surface-card: #FFFFFF;
+
+  /* Semantic colors */
+  --flip7-success: #27AE60;
+  --flip7-error: #E74C3C;
+
+  /* ── shadcn/ui token mapping ── */
+  --background: #EFF8F7;
+  --foreground: #1E8C86;
+  --card: #FFFFFF;
+  --card-foreground: #1E8C86;
+  --popover: #FFFFFF;
+  --popover-foreground: #1E8C86;
+  --primary: #2BA8A2;
+  --primary-foreground: #FFFFFF;
+  --secondary: #E8F6F5;
+  --secondary-foreground: #1E8C86;
+  --muted: #E8F6F5;
+  --muted-foreground: #6B9E9B;
+  --accent: #FFD23F;
+  --accent-foreground: #5C4A1E;
+  --destructive: #EF6C4A;
+  --destructive-foreground: #FFFFFF;
+  --border: #C5E3E0;
+  --input: #FFF8E7;
+  --ring: #2BA8A2;
+  --radius: 1rem;
+  --sidebar: #EFF8F7;
+  --sidebar-foreground: #1E8C86;
+  --sidebar-primary: #2BA8A2;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #E8F6F5;
+  --sidebar-accent-foreground: #1E8C86;
+  --sidebar-border: #C5E3E0;
+  --sidebar-ring: #2BA8A2;
+
+  /* Chart colors */
+  --chart-1: #2BA8A2;
+  --chart-2: #FFD23F;
+  --chart-3: #EF6C4A;
+  --chart-4: #5DADE2;
+  --chart-5: #27AE60;
+
+  /* ── Flip7 Colored Glow Shadows ── */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.16);
+  --shadow-card: 0 4px 20px rgba(43, 168, 162, 0.10);
+  --shadow-coral-glow: 0 4px 20px rgba(239, 108, 74, 0.35);
+  --shadow-teal-glow: 0 4px 20px rgba(43, 168, 162, 0.30);
+  --shadow-accent-glow: 0 4px 20px rgba(255, 210, 63, 0.40);
+  --shadow-sky-glow: 0 4px 16px rgba(93, 173, 226, 0.30);
+  --shadow-focus: 0 0 0 4px rgba(43, 168, 162, 0.15);
 }
 
 .dark {
-  --background: #1A1D2E;
-  --foreground: #F5E6D3;
-  --card: #252840;
-  --card-foreground: #F5E6D3;
-  --popover: #252840;
-  --popover-foreground: #F5E6D3;
-  --primary: #FF9F5C;
-  --primary-foreground: #1A1D2E;
-  --secondary: #2D2140;
-  --secondary-foreground: #E0C8A8;
-  --muted: #232640;
-  --muted-foreground: #7A8BA8;
-  --accent: #FFE066;
+  --background: #1A2524;
+  --foreground: #D4EDEB;
+  --card: #243332;
+  --card-foreground: #D4EDEB;
+  --popover: #243332;
+  --popover-foreground: #D4EDEB;
+  --primary: #3CC4BD;
+  --primary-foreground: #1A2524;
+  --secondary: #1F302E;
+  --secondary-foreground: #D4EDEB;
+  --muted: #1F302E;
+  --muted-foreground: #7AA5A2;
+  --accent: #FFD23F;
   --accent-foreground: #3D3020;
-  --destructive: #FF7B7B;
-  --destructive-foreground: #1A1D2E;
-  --border: #333655;
-  --input: #232640;
-  --ring: #FF9F5C;
-  --sidebar: #1A1D2E;
-  --sidebar-foreground: #F5E6D3;
-  --sidebar-primary: #FF9F5C;
-  --sidebar-primary-foreground: #1A1D2E;
-  --sidebar-accent: #2D2140;
-  --sidebar-accent-foreground: #F5E6D3;
-  --sidebar-border: #333655;
-  --sidebar-ring: #FF9F5C;
-  --chart-1: #FF8CB3;
-  --chart-2: #FF9F5C;
-  --chart-3: #8FD86A;
-  --chart-4: #7BD0FF;
-  --chart-5: #FFE066;
-  --pink: #FF8CB3;
-  --green: #8FD86A;
-  --yellow: #FFE066;
-  --sky: #7BD0FF;
+  --destructive: #FF8A6A;
+  --destructive-foreground: #1A2524;
+  --border: #334644;
+  --input: #243332;
+  --ring: #3CC4BD;
+  --sidebar: #1A2524;
+  --sidebar-foreground: #D4EDEB;
+  --sidebar-primary: #3CC4BD;
+  --sidebar-primary-foreground: #1A2524;
+  --sidebar-accent: #1F302E;
+  --sidebar-accent-foreground: #D4EDEB;
+  --sidebar-border: #334644;
+  --sidebar-ring: #3CC4BD;
+
+  --flip7-surface-base: #1A2524;
+  --flip7-surface-card: #243332;
+  --flip7-cream: #3D3830;
+  --flip7-teal-bg: #1F302E;
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.45);
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
 
 @theme inline {
-  --font-sans: var(--font-nunito);
+  --font-sans: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -134,11 +173,19 @@
   }
 }
 
-/* ── 纸屑动画 ── */
+/* ── Flip7 Confetti (Victory) ── */
 @keyframes confetti-fall {
-  0%   { transform: translateY(-10px) rotate(0deg) scale(1); opacity: 1; }
-  80%  { opacity: 1; }
-  100% { transform: translateY(105vh) rotate(720deg) scale(0.6); opacity: 0; }
+  0% {
+    transform: translateY(-10px) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(105vh) rotate(720deg) scale(0.6);
+    opacity: 0;
+  }
 }
 
 @keyframes confetti-sway {
@@ -147,7 +194,7 @@
   75%  { margin-left: -20px; }
 }
 
-/* ── 格子弹跳 ── */
+/* ── Cell Pop Bounce ── */
 @keyframes pop-bounce {
   0%   { transform: scale(1); }
   30%  { transform: scale(1.25); }
@@ -155,13 +202,13 @@
   100% { transform: scale(1); }
 }
 
-/* ── 星星飞散 ── */
+/* ── Sparkle Out ── */
 @keyframes sparkle-out {
   0%   { transform: translate(0, 0) scale(1); opacity: 1; }
   100% { transform: translate(var(--sx), var(--sy)) scale(0); opacity: 0; }
 }
 
-/* ── 摇头 ── */
+/* ── Head Shake (wrong click) ── */
 @keyframes head-shake {
   0%, 100% { transform: translateX(0); }
   15%  { transform: translateX(-4px) rotate(-3deg); }
@@ -171,16 +218,28 @@
   75%  { transform: translateX(-2px); }
 }
 
-/* ── 漂浮云朵 ── */
-@keyframes float-cloud {
-  0%, 100% { transform: translateY(0); }
-  50%  { transform: translateY(-8px); }
+/* ── Flip7 Crown Bounce ── */
+@keyframes crown-bounce {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25%  { transform: translateY(-8px) rotate(-4deg); }
+  50%  { transform: translateY(0) rotate(0deg); }
+  75%  { transform: translateY(-4px) rotate(4deg); }
 }
 
-/* ── 动物弹跳 ── */
-@keyframes mascot-bounce {
-  0%, 100% { transform: translateY(0); }
-  30%  { transform: translateY(-12px); }
-  50%  { transform: translateY(0); }
-  70%  { transform: translateY(-6px); }
+/* ── Flip7 Glow Pulse (Winner Card) ── */
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50%  { opacity: 1; transform: scale(1.03); }
+}
+
+/* ── Flip7 BOOM Pulse ── */
+@keyframes boom-pulse {
+  0%, 100% {
+    border-color: rgba(239, 108, 74, 0.6);
+    box-shadow: 0 0 12px rgba(239, 108, 74, 0.25);
+  }
+  50% {
+    border-color: rgba(239, 108, 74, 1);
+    box-shadow: 0 0 24px rgba(239, 108, 74, 0.5);
+  }
 }
