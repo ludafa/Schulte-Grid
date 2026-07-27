@@ -4,85 +4,97 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* ── 数字小花园 · 儿童友好色盘 ── */
-  --background: #E8F4FD;
-  --foreground: #4A3728;
-  --card: #FFFFFF;
-  --card-foreground: #4A3728;
-  --popover: #FFFFFF;
-  --popover-foreground: #4A3728;
-  --primary: #FF8C42;
+  /* ── 数字小花园 · 花园晨光色盘 ── */
+  --background: #F0F3E8;
+  --foreground: #5D4037;
+  --card: #FFFEF7;
+  --card-foreground: #5D4037;
+  --popover: #FFFEF7;
+  --popover-foreground: #5D4037;
+  --primary: #F4A825;
   --primary-foreground: #FFFFFF;
-  --secondary: #FFF0E5;
-  --secondary-foreground: #8B5E3C;
-  --muted: #F0F7FF;
-  --muted-foreground: #8DAFD6;
-  --accent: #FFD93D;
-  --accent-foreground: #5C4A1E;
-  --destructive: #FF6B6B;
+  --secondary: #F5F0E6;
+  --secondary-foreground: #6B4226;
+  --muted: #E8EBE0;
+  --muted-foreground: #9B8C7D;
+  --accent: #7E57C2;
+  --accent-foreground: #FFFFFF;
+  --destructive: #E8637A;
   --destructive-foreground: #FFFFFF;
-  --border: #CDE3F7;
-  --input: #EEF6FD;
-  --ring: #FF8C42;
+  --border: #D4C5B9;
+  --input: #F5F0E6;
+  --ring: #F4A825;
   --radius: 1.25rem;
-  --sidebar: #E8F4FD;
-  --sidebar-foreground: #4A3728;
-  --sidebar-primary: #FF8C42;
+  --sidebar: #F0F3E8;
+  --sidebar-foreground: #5D4037;
+  --sidebar-primary: #F4A825;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #FFF0E5;
-  --sidebar-accent-foreground: #4A3728;
-  --sidebar-border: #CDE3F7;
-  --sidebar-ring: #FF8C42;
-  --chart-1: #FF6B9D;
-  --chart-2: #FF8C42;
-  --chart-3: #7EC850;
-  --chart-4: #6BC5FF;
-  --chart-5: #FFD93D;
+  --sidebar-accent: #F5F0E6;
+  --sidebar-accent-foreground: #5D4037;
+  --sidebar-border: #D4C5B9;
+  --sidebar-ring: #F4A825;
+  --chart-1: #F4A825;
+  --chart-2: #7E57C2;
+  --chart-3: #66BB6A;
+  --chart-4: #5C9CE5;
+  --chart-5: #E8637A;
 
-  /* Kid-specific tokens */
-  --pink: #FF6B9D;
-  --green: #7EC850;
-  --yellow: #FFD93D;
-  --sky: #6BC5FF;
+  /* Garden-specific tokens */
+  --soil: #C4956A;
+  --soil-dark: #A0764F;
+  --soil-text: #5D4037;
+  --marigold: #F4A825;
+  --morning-glory: #7E57C2;
+  --rose: #E8637A;
+  --cornflower: #5C9CE5;
+  --sunflower: #FCD34D;
+  --mint: #81B29A;
+  --sakura: #F2A5B5;
 }
 
 .dark {
-  --background: #1A1D2E;
-  --foreground: #F5E6D3;
-  --card: #252840;
-  --card-foreground: #F5E6D3;
-  --popover: #252840;
-  --popover-foreground: #F5E6D3;
-  --primary: #FF9F5C;
-  --primary-foreground: #1A1D2E;
-  --secondary: #2D2140;
-  --secondary-foreground: #E0C8A8;
-  --muted: #232640;
-  --muted-foreground: #7A8BA8;
-  --accent: #FFE066;
-  --accent-foreground: #3D3020;
-  --destructive: #FF7B7B;
-  --destructive-foreground: #1A1D2E;
-  --border: #333655;
-  --input: #232640;
-  --ring: #FF9F5C;
-  --sidebar: #1A1D2E;
-  --sidebar-foreground: #F5E6D3;
-  --sidebar-primary: #FF9F5C;
-  --sidebar-primary-foreground: #1A1D2E;
-  --sidebar-accent: #2D2140;
-  --sidebar-accent-foreground: #F5E6D3;
-  --sidebar-border: #333655;
-  --sidebar-ring: #FF9F5C;
-  --chart-1: #FF8CB3;
-  --chart-2: #FF9F5C;
-  --chart-3: #8FD86A;
-  --chart-4: #7BD0FF;
-  --chart-5: #FFE066;
-  --pink: #FF8CB3;
-  --green: #8FD86A;
-  --yellow: #FFE066;
-  --sky: #7BD0FF;
+  --background: #1C1F1A;
+  --foreground: #E8D5C4;
+  --card: #252825;
+  --card-foreground: #E8D5C4;
+  --popover: #252825;
+  --popover-foreground: #E8D5C4;
+  --primary: #F6BF3F;
+  --primary-foreground: #1C1F1A;
+  --secondary: #2D2820;
+  --secondary-foreground: #D4C4B0;
+  --muted: #2A2D28;
+  --muted-foreground: #8A8D80;
+  --accent: #9B7FD4;
+  --accent-foreground: #1C1F1A;
+  --destructive: #F28B9A;
+  --destructive-foreground: #1C1F1A;
+  --border: #3A3D35;
+  --input: #2A2D28;
+  --ring: #F6BF3F;
+  --sidebar: #1C1F1A;
+  --sidebar-foreground: #E8D5C4;
+  --sidebar-primary: #F6BF3F;
+  --sidebar-primary-foreground: #1C1F1A;
+  --sidebar-accent: #2D2820;
+  --sidebar-accent-foreground: #E8D5C4;
+  --sidebar-border: #3A3D35;
+  --sidebar-ring: #F6BF3F;
+  --chart-1: #F6BF3F;
+  --chart-2: #9B7FD4;
+  --chart-3: #72C97A;
+  --chart-4: #6BAEEB;
+  --chart-5: #F28B9A;
+  --soil: #8B6F58;
+  --soil-dark: #6B5544;
+  --soil-text: #E8D5C4;
+  --marigold: #F6BF3F;
+  --morning-glory: #9B7FD4;
+  --rose: #F28B9A;
+  --cornflower: #6BAEEB;
+  --sunflower: #FDE68A;
+  --mint: #8EC9A0;
+  --sakura: #F5BBC4;
 }
 
 @theme inline {
@@ -134,34 +146,22 @@
   }
 }
 
-/* ── 纸屑动画 ── */
+/* ── 纸屑庆祝 ── */
 @keyframes confetti-fall {
   0%   { transform: translateY(-10px) rotate(0deg) scale(1); opacity: 1; }
   80%  { opacity: 1; }
   100% { transform: translateY(105vh) rotate(720deg) scale(0.6); opacity: 0; }
 }
 
-@keyframes confetti-sway {
-  0%, 100% { margin-left: 0; }
-  25%  { margin-left: 20px; }
-  75%  { margin-left: -20px; }
+/* ── 花朵绽放（点击正确数字时格子开花） ── */
+@keyframes flower-bloom {
+  0%   { transform: scale(0.85); opacity: 0.7; }
+  35%  { transform: scale(1.1); opacity: 1; }
+  60%  { transform: scale(0.95); }
+  100% { transform: scale(1); opacity: 1; }
 }
 
-/* ── 格子弹跳 ── */
-@keyframes pop-bounce {
-  0%   { transform: scale(1); }
-  30%  { transform: scale(1.25); }
-  60%  { transform: scale(0.9); }
-  100% { transform: scale(1); }
-}
-
-/* ── 星星飞散 ── */
-@keyframes sparkle-out {
-  0%   { transform: translate(0, 0) scale(1); opacity: 1; }
-  100% { transform: translate(var(--sx), var(--sy)) scale(0); opacity: 0; }
-}
-
-/* ── 摇头 ── */
+/* ── 摇晃（点错） ── */
 @keyframes head-shake {
   0%, 100% { transform: translateX(0); }
   15%  { transform: translateX(-4px) rotate(-3deg); }
@@ -171,16 +171,23 @@
   75%  { transform: translateX(-2px); }
 }
 
-/* ── 漂浮云朵 ── */
-@keyframes float-cloud {
-  0%, 100% { transform: translateY(0); }
-  50%  { transform: translateY(-8px); }
+/* ── 星星飞散 ── */
+@keyframes sparkle-out {
+  0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--sx), var(--sy)) scale(0); opacity: 0; }
 }
 
-/* ── 动物弹跳 ── */
+/* ── 花园守护者弹跳 ── */
 @keyframes mascot-bounce {
   0%, 100% { transform: translateY(0); }
-  30%  { transform: translateY(-12px); }
+  30%  { transform: translateY(-14px); }
   50%  { transform: translateY(0); }
-  70%  { transform: translateY(-6px); }
+  70%  { transform: translateY(-7px); }
+}
+
+/* ── 叶子轻摆 ── */
+@keyframes leaf-sway {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25%  { transform: translateY(-3px) rotate(1deg); }
+  75%  { transform: translateY(-5px) rotate(-1deg); }
 }
