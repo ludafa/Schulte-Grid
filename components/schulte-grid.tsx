@@ -345,9 +345,27 @@ export function SchulteGrid() {
               ════════════════════════════════════ */}
           {gameState === "idle" && (
             <div className="text-center space-y-6">
-              {/* 吉祥物 */}
-              <div className="text-7xl sm:text-8xl" style={{ animation: "mascot-bounce 1.5s ease-in-out infinite" }}>
-                {masgotEmoji}
+              {/* 吉祥物 + 小花园花瓣 */}
+              <div className="relative inline-block">
+                {/* 漂浮花瓣 */}
+                <div className="absolute inset-0 pointer-events-none" aria-hidden>
+                  {["🌸", "🌼", "🌺", "🍀", "🌿", "💮"].map((petal, i) => (
+                    <span
+                      key={i}
+                      className="absolute text-sm sm:text-base"
+                      style={{
+                        left: `${-12 + i * 19}%`,
+                        top: `${48 + (i % 3) * 14}%`,
+                        animation: `${i % 2 === 0 ? "petal-drift" : "petal-drift-alt"} ${2.4 + (i % 3) * 0.7}s ease-out ${i * 0.65}s infinite`,
+                      }}
+                    >
+                      {petal}
+                    </span>
+                  ))}
+                </div>
+                <span className="text-7xl sm:text-8xl inline-block" style={{ animation: "mascot-bounce 1.5s ease-in-out infinite" }}>
+                  {masgotEmoji}
+                </span>
               </div>
 
               {/* 标题 */}
@@ -498,7 +516,8 @@ export function SchulteGrid() {
                 size="lg"
                 className="text-2xl sm:text-3xl font-extrabold h-auto py-5 px-12 rounded-full
                            bg-[#FF8C42] hover:bg-[#FF7728] text-white shadow-lg
-                           active:scale-95 transition-transform"
+                           active:scale-95 transition-transform
+                           animate-[pulse-cta_2.5s_ease-in-out_infinite]"
               >
                 开始玩！ 🎉
               </Button>
@@ -584,12 +603,21 @@ export function SchulteGrid() {
                   </span>
                   <div className="flex-1 h-4 bg-white/60 rounded-full border border-border overflow-hidden shadow-inner">
                     <div
-                      className="h-full rounded-full transition-all duration-300 ease-out"
+                      className="h-full rounded-full transition-all duration-300 ease-out relative overflow-hidden"
                       style={{
                         width: `${((nextNumber - 1) / totalCells) * 100}%`,
                         background: "linear-gradient(90deg, #FFD93D, #FF8C42)",
                       }}
-                    />
+                    >
+                      {/* 流光 */}
+                      <span
+                        className="absolute inset-y-0 w-1/2"
+                        style={{
+                          background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent)",
+                          animation: "shimmer-bar 1.8s ease-in-out infinite",
+                        }}
+                      />
+                    </div>
                   </div>
                   <span className="text-sm text-muted-foreground w-7 tabular-nums">
                     {totalCells}
@@ -622,11 +650,11 @@ export function SchulteGrid() {
                         cellTextSize,
                         // 消失模式
                         isHidden && "opacity-0 pointer-events-none scale-50 transition-all duration-200",
-                        // 未点击：彩色 / 单色背景
+                        // 未点击：彩色 / 单色背景 + 立体深度
                         !cell.clicked && !isWrong && !isHidden && cn(
                           colorClass,
-                          "shadow-sm hover:shadow-md hover:scale-[1.04] cursor-pointer",
-                          "transition-colors duration-75",
+                          "shadow-[0_3px_0_0_rgba(0,0,0,0.09),0_6px_12px_rgba(0,0,0,0.05)] hover:shadow-[0_2px_0_0_rgba(0,0,0,0.06),0_4px_8px_rgba(0,0,0,0.04)] hover:scale-[1.04] active:scale-[0.95] cursor-pointer",
+                          "transition-all duration-100",
                         ),
                         // 已点击（高亮模式 — 丰富动画）
                         cell.clicked && !autoHide && isRich && "bg-[#FF6B9D] border-[#FF4D88] text-white shadow-md animate-[pop-bounce_0.35s_ease-out]",
